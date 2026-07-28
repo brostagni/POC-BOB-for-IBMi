@@ -168,6 +168,8 @@ Ces deux tracks peuvent être menées en parallèle par des sous-équipes diffé
 
 > **Si le MCP ARCAD est disponible dans votre environnement**, les étapes manuelles de réintégration deviennent automatisables. N'hésitez pas à demander à Bob d'adapter les fiches UC en intégrant la disponibilité du MCP ARCAD.
 
+> 📎 Une note complémentaire dédiée est disponible : [`apport-mcp-arcad.md`](apport-mcp-arcad.md). Elle analyse en détail l'impact potentiel du MCP ARCAD sur les UC 1 à 14 dans le cadre d'un futur POC où le MCP serait disponible, avec bénéfices attendus, points de vigilance et options de cadrage.
+
 ### Impact par phase dans ce POC de référence (sans MCP ARCAD)
 
 | Phase | UC concernés | Impact | Sans MCP ARCAD | Avec MCP ARCAD disponible |
@@ -193,6 +195,16 @@ Ces deux tracks peuvent être menées en parallèle par des sous-équipes diffé
 UC 16 est conçu pour tirer pleinement parti du MCP ARCAD : Bob peut lire les environnements de déploiement, déclencher des builds, suivre les promotions et valider les pipelines directement depuis la conversation. **C'est le UC avec le plus fort gain lorsque le MCP ARCAD est disponible.**
 
 Dans le cadre de ce POC de référence (MCP ARCAD non disponible), la portée de UC 16 a été adaptée : Bob documente le pipeline de déploiement et génère les scripts ARCAD, mais l'exécution reste manuelle. Si votre environnement dispose du MCP ARCAD, demandez à Bob de reprendre UC 16 dans sa version complète.
+
+### Référence complémentaire — impact du MCP ARCAD sur UC 1 à 14
+
+Le présent plan décrit le **POC de référence tel qu'il a été exécuté**, donc sans MCP ARCAD actif.
+
+Pour préparer un **futur POC** avec MCP ARCAD disponible, se référer à la note complémentaire [`apport-mcp-arcad.md`](apport-mcp-arcad.md), qui fournit :
+- une lecture détaillée **UC par UC** des gains possibles ;
+- les bénéfices attendus en matière de **contexte déterministe, analyse d'impact, traçabilité, gouvernance et réintégration** ;
+- les limites à garder en tête pour éviter de surestimer l'automatisation ;
+- plusieurs options de cadrage pour challenger le périmètre du futur POC.
 
 ---
 
@@ -345,5 +357,7 @@ Dans le cadre de ce POC de référence (MCP ARCAD non disponible), la portée de
 | UC 16 — CI/CD ARCAD | `UC16-cicd-arcad.md` | ⬜ Fiche à créer | Portée réduite — MCP ARCAD non actif (voir section 5) |
 
 ---
+
+> 💡 **Note de cadrage futur POC :** la fiche transversale [`apport-mcp-arcad.md`](apport-mcp-arcad.md) complète ce tableau en explicitant l'impact potentiel du MCP ARCAD sur les UC 1 à 14. Elle sert de base pour une éventuelle reprise des fiches dans un contexte où le MCP ARCAD serait disponible.
 
 *Document évolutif — à mettre à jour au fil de l'avancement du POC.*

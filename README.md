@@ -87,6 +87,8 @@ Ces fiches sont des guides opérationnels prêts à l'emploi : chaque fiche déc
 
 Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites dans chaque fiche peuvent être automatisées. N'hésitez pas à demander à Bob de modifier les fiches UC en intégrant la disponibilité du MCP ARCAD.
 
+Une fiche complémentaire anonyme est disponible pour préparer un futur POC avec MCP ARCAD actif : [`apport-mcp-arcad.md`](apport-mcp-arcad.md). Elle détaille, pour les UC 1 à 14, les apports attendus du MCP ARCAD, les bénéfices possibles, les limites, ainsi que plusieurs options de cadrage à challenger avant lancement.
+
 UC16 (DevOps/ARCAD) n'est pas couvert dans ce dépôt dans sa version complète, mais il représente **le UC avec le plus fort potentiel** lorsque le MCP ARCAD est disponible — Bob peut piloter l'intégralité du pipeline de déploiement IBM i.
 
 ---
@@ -194,6 +196,8 @@ Each guide is an operational runbook: prerequisites, Bob prompts, expected deliv
 
 The ARCAD MCP was not available in this reference POC context (ARCAD version not compatible with the MCP). If the ARCAD MCP is available in your environment, the manual reintegration steps described in each guide can be automated. Feel free to ask Bob to adapt the UC guides to integrate ARCAD MCP availability.
 
+An additional anonymised companion note is available to prepare a future POC with ARCAD MCP enabled: [`apport-mcp-arcad.md`](apport-mcp-arcad.md). It details, for UC 1 to 14, the expected contribution of ARCAD MCP, the potential benefits, the limits, and several framing options to challenge before launch.
+
 UC16 (DevOps/ARCAD) is not fully covered in this repository, but it represents **the use case with the highest potential** when the ARCAD MCP is available — Bob can drive the entire IBM i deployment pipeline directly.
 
 ---
@@ -216,5 +220,6 @@ UC16 (DevOps/ARCAD) is not fully covered in this repository, but it represents *
 |------|-------------|
 | `UC01` – `UC15` | Operational use-case guides |
 | `plan-poc-bob-acme.md` | Full POC roadmap: phases, UC ordering, ARCAD integration context, deliverables map |
+| `apport-mcp-arcad.md` | Companion analysis for a future POC with ARCAD MCP: impact by use case (UC1–UC14), benefits, limits, and framing options |
 | `anonymisation-plan.md` | Anonymisation process documentation |
 | `README.md` | This file |
