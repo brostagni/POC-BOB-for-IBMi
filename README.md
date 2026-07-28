@@ -83,9 +83,7 @@ Ces fiches sont des guides opérationnels prêts à l'emploi : chaque fiche déc
 
 ### Note sur ARCAD
 
-**ARCAD et Bob V2 sont pleinement compatibles lorsque le MCP ARCAD est disponible.** Ce dépôt est issu d'un POC de référence réalisé sans MCP ARCAD car la version ARCAD du client n'était pas compatible avec le MCP. Les fiches décrivent donc un mode de fonctionnement sans MCP ARCAD, avec des étapes de réintégration manuelle.
-
-Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites dans chaque fiche peuvent être automatisées. N'hésitez pas à demander à Bob de modifier les fiches UC en intégrant la disponibilité du MCP ARCAD.
+**ARCAD et Bob V2 sont pleinement compatibles lorsque le MCP ARCAD est disponible.** Ce dépôt est issu d'un POC de référence réalisé sans MCP ARCAD, car la version ARCAD du client n'était pas compatible avec le MCP. Les fiches décrivent donc un mode de fonctionnement avec réintégration manuelle. Si le MCP ARCAD est disponible dans votre environnement, ces étapes peuvent être automatisées. N'hésitez pas à demander à Bob d'adapter les fiches UC en intégrant cette disponibilité.
 
 Une fiche complémentaire anonyme est disponible pour préparer un futur POC avec MCP ARCAD actif : [`apport-mcp-arcad.md`](apport-mcp-arcad.md). Elle détaille, pour les UC 1 à 14, les apports attendus du MCP ARCAD, les bénéfices possibles, les limites, ainsi que plusieurs options de cadrage à challenger avant lancement.
 
@@ -192,9 +190,7 @@ Each guide is an operational runbook: prerequisites, Bob prompts, expected deliv
 
 ### Note on ARCAD
 
-**ARCAD and Bob V2 are fully compatible when the ARCAD MCP is available.** This repository is based on a reference POC conducted without the ARCAD MCP, because the client's ARCAD version was not compatible with the MCP. The guides therefore describe a workflow without ARCAD MCP, with manual reintegration steps.
-
-The ARCAD MCP was not available in this reference POC context (ARCAD version not compatible with the MCP). If the ARCAD MCP is available in your environment, the manual reintegration steps described in each guide can be automated. Feel free to ask Bob to adapt the UC guides to integrate ARCAD MCP availability.
+**ARCAD and Bob V2 are fully compatible when the ARCAD MCP is available.** This repository is based on a reference POC conducted without the ARCAD MCP, because the client's ARCAD version was not compatible with the MCP. The guides therefore describe a workflow with manual reintegration. If the ARCAD MCP is available in your environment, these steps can be automated. Feel free to ask Bob to adapt the UC guides accordingly.
 
 An additional anonymised companion note is available to prepare a future POC with ARCAD MCP enabled: [`apport-mcp-arcad.md`](apport-mcp-arcad.md). It details, for UC 1 to 14, the expected contribution of ARCAD MCP, the potential benefits, the limits, and several framing options to challenge before launch.
 
