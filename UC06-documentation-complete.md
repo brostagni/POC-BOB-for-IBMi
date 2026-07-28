@@ -173,21 +173,21 @@ Le mode **IBM i Developer** pré-charge le contexte IBM i dans chaque conversati
 
 > 💡 Si le Confluence MCP est actif, publier chaque livrable directement dans l'espace POC à l'issue de sa production. La documentation publiée au fil de l'eau est plus utile qu'un export final en fin de phase.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-ACME utilise **ARCAD** pour la gestion du code source et les déploiements IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
 **Impact sur les UC 4, 5 et 6 : limité.** ARCAD gère les versions et les déploiements — pas la compréhension du code. Les sources sont accessibles via IBM i MCP indépendamment d'ARCAD.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
-|--------------------------------------|------------------------------|
-| Impossible de lire l'historique des versions ARCAD directement dans Bob | IBM i MCP lit les sources courants dans les bibliothèques ARCAD normalement |
-| Impossible d'interroger les environnements de déploiement ARCAD | L'analyse du code et la génération de documentation sont intégralement fonctionnelles |
-| La section "Historique des modifications" de la spec technique (Prompt 3) ne peut pas être alimentée automatiquement | Ajouter le placeholder `⚠️ Historique ARCAD — à compléter manuellement depuis l'interface ARCAD` dans les livrables concernés |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
+|--------------------------------------|---------------------------|
+| Lire manuellement l'historique des versions ARCAD | Le MCP ARCAD peut exposer l'historique directement dans le contexte Bob |
+| Exporter manuellement l'historique ARCAD (CSV/texte) et le charger dans Bob | L'historique est intégrable automatiquement dans la spec technique (Prompt 3) |
+| Ajouter le placeholder `⚠️ Historique ARCAD — à compléter manuellement depuis l'interface ARCAD` | Le placeholder n'est plus nécessaire |
 
-> 💡 **Contournement pour la spec technique :** exporter depuis ARCAD la liste des objets managés et leur historique de modifications (export CSV ou texte), charger ce fichier dans le contexte Bob, puis demander à Bob de l'intégrer dans la spec technique. Ce n'est pas automatique mais reste exploitable.
+> 💡 **Dans les deux cas :** IBM i MCP lit les sources courants dans les bibliothèques ARCAD normalement. L'analyse du code et la génération de documentation sont intégralement fonctionnelles.
 
-> ⚠️ **Pour UC 16 (DevOps/CI-CD avec ARCAD) :** l'absence du MCP ARCAD a un impact majeur — Bob ne pourra pas piloter les pipelines ARCAD directement. La fiche UC 16 traitera cette contrainte en détail.
+> 💡 **Pour UC 16 (DevOps/CI-CD avec ARCAD) :** UC 16 tire pleinement parti du MCP ARCAD — Bob peut piloter les pipelines directement si le MCP est disponible. Voir la note UC 16 dans le plan.
 
 ---
 

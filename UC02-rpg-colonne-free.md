@@ -208,19 +208,19 @@ La conversion syntaxique RPG → Free est une opération à fort risque silencie
 
 > ⚠️ Ne jamais rester en mode Agent pendant la phase de conversion — Bob pourrait écrire un source converti avec des équivalences MOVE/MOVEL non validées, invisibles à la compilation mais régressives à l'exécution.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
 **Impact sur UC 2 : faible.** UC 2 modifie des membres sources existants — IBM i MCP accède à ces membres indépendamment d'ARCAD.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
-|--------------------------------------|------------------------------|
-| Impossible de créer automatiquement une tâche ARCAD pour chaque programme converti | IBM i MCP lit et compile les sources dans les bibliothèques ARCAD normalement |
-| Les sources convertis ne sont pas automatiquement versionnés dans ARCAD | L'analyse, la génération du diff et la compilation de test sont intégralement fonctionnels |
-| Réintégration manuelle dans ARCAD après chaque session de conversion | Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête de chaque fichier diff généré |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
+|--------------------------------------|---------------------------|
+| Créer manuellement une tâche ARCAD pour chaque programme converti | Le MCP ARCAD peut créer la tâche et versionner automatiquement |
+| Réintégration manuelle dans ARCAD après chaque session | IBM i MCP lit et compile les sources dans les bibliothèques ARCAD normalement dans les deux cas |
+| Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans chaque diff | Le placeholder n'est plus nécessaire — la réintégration est pilotée par Bob |
 
-> 💡 **Contournement :** avant de démarrer UC 2 sur un programme, vérifier dans ARCAD qu'il n'est pas en cours de modification par un autre développeur (promotion en cours). Charger la liste des objets verrouillés dans le contexte Bob pour éviter de travailler sur une version qui sera écrasée.
+> 💡 **Dans les deux cas :** avant de démarrer UC 2 sur un programme, vérifier dans ARCAD qu'il n'est pas en cours de modification par un autre développeur (promotion en cours). Charger la liste des objets verrouillés dans le contexte Bob pour éviter de travailler sur une version qui sera écrasée.
 
 ---
 

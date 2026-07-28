@@ -179,16 +179,17 @@ En mode Ask, Bob génère le DDL dans le chat — l'équipe peut le relire, le c
 
 > 💡 **Règle d'or pour UC 11 :** le mode Agent est autorisé **uniquement** pour le Prompt 1-bis (test de création) et la sauvegarde finale. Pendant toute la génération (Prompts 0 à 5), rester en mode Ask.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
-**Impact sur UC 11 : faible à moyen.** Les scripts DDL générés sont de nouveaux objets SQL qui n'existent pas encore dans ARCAD. Ces scripts devront être versionnés et enregistrés manuellement dans ARCAD (ou dans un gestionnaire de migrations SQL) après validation.
+**Impact sur UC 11 : faible à moyen.** Les scripts DDL générés sont de nouveaux objets SQL — ils devront être versionnés et enregistrés dans ARCAD (ou dans un gestionnaire de migrations SQL) après validation.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
-|--------------------------------------|------------------------------|
-| Impossible de vérifier si un objet de même nom est déjà géré dans ARCAD | IBM i Database MCP peut vérifier via `QSYS2.TABLES` / `QSYS2.SYSROUTINES` que l'objet n'existe pas encore |
-| Les scripts DDL générés ne sont pas automatiquement versionnés dans ARCAD | Ajouter `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête de chaque script |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
+|--------------------------------------|---------------------------|
+| Vérifier manuellement dans ARCAD si un objet de même nom est déjà géré | IBM i Database MCP peut vérifier via `QSYS2.TABLES` / `QSYS2.SYSROUTINES` dans les deux cas |
+| Versionner et enregistrer manuellement les scripts DDL dans ARCAD | Le MCP ARCAD peut versionner automatiquement les scripts après validation |
+| Ajouter `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans chaque script | Le placeholder n'est plus nécessaire — la réintégration est pilotée par Bob |
 
 ---
 

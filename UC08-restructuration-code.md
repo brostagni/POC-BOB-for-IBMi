@@ -207,20 +207,20 @@ UC 8 est l'UC où le risque de dégradation silencieuse est le plus élevé. En 
 
 > ⚠️ Ne jamais rester en mode Agent pendant la phase de conception du plan d'architecture — une erreur dans le Prompt 1 se propage dans tous les modules générés ensuite.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
-**Impact sur UC 8 : moyen.** UC 8 crée de nouveaux membres sources (les modules extraits) qui n'existent pas encore dans ARCAD. Ces nouveaux membres devront être enregistrés manuellement dans ARCAD après validation.
+**Impact sur UC 8 : moyen.** UC 8 crée de nouveaux membres sources (les modules extraits) qui n'existent pas encore dans ARCAD. Ces nouveaux membres devront être enregistrés dans ARCAD après validation.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
-|--------------------------------------|------------------------------|
-| Impossible de créer automatiquement les nouveaux membres dans ARCAD lors de l'extraction | IBM i MCP peut créer les membres dans les bibliothèques source directement — ARCAD les verra ensuite lors de la synchro manuelle |
-| Impossible de vérifier si le programme en cours de restructuration est verrouillé par une promotion ARCAD en cours | Vérification manuelle dans l'interface ARCAD avant de démarrer chaque session UC 8 |
-| Les nouveaux modules extraits ne sont pas automatiquement intégrés dans les packages de déploiement ARCAD | Réintégration manuelle dans ARCAD — documenter la liste des nouveaux membres créés dans le fichier `*-plan-archi-*.md` |
-| L'historique de version du programme original n'est pas accessible depuis Bob | Charger un export ARCAD si l'historique est nécessaire pour comprendre l'évolution du programme |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
+|--------------------------------------|---------------------------|
+| Créer manuellement les nouveaux membres dans ARCAD après l'extraction | IBM i MCP + MCP ARCAD peuvent créer les membres et les enregistrer dans ARCAD directement |
+| Vérifier manuellement dans ARCAD si le programme est verrouillé par une promotion | Le MCP ARCAD peut exposer le statut de verrouillage directement dans Bob |
+| Réintégration manuelle dans ARCAD — documenter dans `*-plan-archi-*.md` | Les nouveaux modules peuvent être intégrés automatiquement dans les packages de déploiement ARCAD |
+| Charger un export ARCAD pour accéder à l'historique du programme | L'historique de version est accessible directement via le MCP ARCAD |
 
-> 💡 **Contournement :** au début de chaque session UC 8, exporter depuis ARCAD la liste des programmes du périmètre et leur statut (en promotion ou non). Créer un checkpoint ARCAD sur les membres à modifier avant de démarrer — facilite la comparaison avant/après en cas de problème.
+> 💡 **Dans les deux cas :** au début de chaque session UC 8, vérifier dans ARCAD la liste des programmes du périmètre et leur statut. Créer un checkpoint sur les membres à modifier avant de démarrer.
 
 ---
 

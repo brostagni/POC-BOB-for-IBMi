@@ -192,19 +192,19 @@ UC 1 est la conversion à risque le plus élevé du POC. En mode Ask, Bob produi
 
 > ⚠️ Ne jamais rester en mode Agent pendant la transposition des structures de données — un REDEFINES mal transposé en DCL-DS avec OVERLAY incorrect produit un accès mémoire silencieusement erroné qui ne sera pas détecté à la compilation.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
-**Impact sur UC 1 : moyen.** Le programme RPG converti est un nouveau membre source (`QRPGSRC`) qui n'existait pas avant. Ce nouveau membre devra être enregistré manuellement dans ARCAD et l'ancien programme COBOL marqué comme remplacé.
+**Impact sur UC 1 : moyen.** Le programme RPG converti est un nouveau membre source (`QRPGSRC`) qui n'existait pas avant. Ce nouveau membre devra être enregistré dans ARCAD et l'ancien programme COBOL marqué comme remplacé.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
-|--------------------------------------|------------------------------|
-| Impossible de créer automatiquement le nouveau membre QRPGSRC dans ARCAD | IBM i MCP peut créer le membre directement dans les bibliothèques source — ARCAD le verra lors de la synchro manuelle |
-| Impossible de marquer le programme COBOL comme "remplacé" dans ARCAD | L'analyse, la génération du diff et la compilation du RPG sont intégralement fonctionnels |
-| Le programme COBOL d'origine reste actif dans ARCAD sans indication de remplacement | Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête du source RPG généré |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
+|--------------------------------------|---------------------------|
+| Créer manuellement le nouveau membre QRPGSRC dans ARCAD après validation | IBM i MCP + MCP ARCAD peuvent créer le membre et l'enregistrer dans ARCAD directement |
+| Marquer manuellement le programme COBOL comme "remplacé" dans ARCAD | Le MCP ARCAD peut automatiser la mise à jour du statut |
+| Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête du source RPG généré | Le placeholder n'est plus nécessaire — la réintégration est pilotée par Bob |
 
-> 💡 **Contournement :** avant de démarrer UC 1 sur un programme COBOL, vérifier dans ARCAD qu'il n'est pas en cours de modification. Documenter dans le fichier `*-analyse-cobol-*.md` le nom du programme COBOL d'origine et le nom du programme RPG cible — pour faciliter la réintégration ARCAD post-validation.
+> 💡 **Dans les deux cas :** avant de démarrer UC 1 sur un programme COBOL, vérifier dans ARCAD qu'il n'est pas en cours de modification. Documenter dans le fichier `*-analyse-cobol-*.md` le nom du programme COBOL d'origine et le nom du programme RPG cible.
 
 ---
 

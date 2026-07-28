@@ -215,19 +215,19 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 
 > ⚠️ **Ne jamais rester en mode Agent pendant l'analyse DDS.** Un mode Agent actif pendant l'analyse du display file source peut modifier le membre DDS existant sur l'IBM i de test.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
-**Impact sur UC 10 : faible à moyen.** Les display files DDS générés (sous-cas A) et les sources Web générés (sous-cas B/C) sont des objets nouveaux — ils doivent être réintégrés manuellement dans ARCAD après validation.
+**Impact sur UC 10 : faible à moyen.** Les display files DDS générés (sous-cas A) et les sources Web générés (sous-cas B/C) sont des objets nouveaux — ils doivent être enregistrés dans ARCAD après validation.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
-|--------------------------------------|------------------------------|
-| Impossible de créer automatiquement le nouveau membre QDDSSRC dans ARCAD | IBM i MCP peut écrire le membre directement dans les bibliothèques source |
-| Impossible de marquer le display file d'origine comme "remplacé" dans ARCAD (sous-cas B/C) | L'analyse, la génération et la compilation sont intégralement fonctionnels |
-| Les sources Web ne sont pas gérés par ARCAD | Les sources Web sont sauvegardés dans le workspace Bob et versionnés via Git indépendamment d'ARCAD |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
+|--------------------------------------|---------------------------|
+| Créer manuellement le nouveau membre QDDSSRC dans ARCAD après validation | IBM i MCP + MCP ARCAD peuvent créer le membre et l'enregistrer dans ARCAD directement |
+| Marquer manuellement le display file d'origine comme "remplacé" dans ARCAD (sous-cas B/C) | Le MCP ARCAD peut automatiser la mise à jour du statut |
+| Les sources Web sont sauvegardés dans le workspace Bob et versionnés via Git | Ce fonctionnement reste identique — Git est indépendant d'ARCAD |
 
-> 💡 **Contournement :** ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête de chaque source DDS généré.
+> 💡 **Dans les deux cas :** ajouter un placeholder de traçabilité dans l'en-tête de chaque source DDS généré pour faciliter le suivi ARCAD.
 
 ---
 

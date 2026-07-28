@@ -184,19 +184,19 @@ La conversion d'accès natifs en SQL embarqué est un travail **itératif** : la
 
 > ⚠️ Le mode Agent est autorisé **uniquement** pour deux opérations précises : le test de compilation via le Prompt 2-bis, et la sauvegarde du source validé. Pendant toute la phase de génération et d'itération SQL (Prompts 0, 1, 2, 3), rester en mode Ask.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
-**Impact sur UC 3 : faible à moyen.** Les sources RPG modifiés par Bob devront être réintégrés dans ARCAD manuellement après validation.
+**Impact sur UC 3 : faible à moyen.** Les sources RPG modifiés par Bob devront être réintégrés dans ARCAD après validation.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
-|--------------------------------------|------------------------------|
-| Impossible de lire l'historique des versions du source RPG dans ARCAD | IBM i MCP lit la version courante du source dans les bibliothèques ARCAD normalement |
-| Les sources convertis ne sont pas automatiquement versionnés dans ARCAD | L'analyse et la génération SQL embarqué sont intégralement fonctionnelles |
-| Réintégration manuelle dans ARCAD après chaque session de conversion | Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête de chaque fichier de source converti |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
+|--------------------------------------|---------------------------|
+| Lire manuellement l'historique des versions du source RPG dans ARCAD | Le MCP ARCAD peut exposer l'historique directement dans le contexte Bob |
+| Réintégration manuelle dans ARCAD après chaque session | L'analyse et la génération SQL embarqué sont fonctionnelles dans les deux cas |
+| Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans chaque source converti | Le placeholder n'est plus nécessaire — la réintégration est pilotée par Bob |
 
-> 💡 **Contournement :** définir dès le début de la session un workflow de réintégration ARCAD — par exemple, nommer les membres sources convertis avec un suffixe `_SQL` dans une bibliothèque de travail, puis les promouvoir dans ARCAD depuis cette bibliothèque après validation.
+> 💡 **Dans les deux cas :** définir un workflow de réintégration ARCAD — par exemple, nommer les membres sources convertis avec un suffixe `_SQL` dans une bibliothèque de travail, puis les promouvoir dans ARCAD depuis cette bibliothèque après validation.
 
 ---
 

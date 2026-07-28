@@ -196,19 +196,19 @@ En mode **Ask**, Bob génère le DDL dans le chat — l'équipe peut le relire, 
 
 > ⚠️ Le mode Agent est autorisé **uniquement** pour deux opérations précises : le test de création DDL via le Prompt 3-bis, et la sauvegarde du script validé. Pendant toute la phase de génération et d'itération (Prompts 0, 1, 2, 3), rester en mode Ask.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
 **Impact sur UC 14 : faible.** ARCAD gère les versions et les déploiements — la lecture des sources DDS se fait via IBM i MCP directement dans les bibliothèques, indépendamment d'ARCAD.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
-|--------------------------------------|------------------------------|
-| Impossible de lire l'historique des versions des fichiers DDS dans ARCAD | IBM i MCP lit la version courante des sources DDS dans les bibliothèques ARCAD normalement |
-| Impossible de vérifier si un PF est actuellement "en promotion" dans un environnement ARCAD | L'analyse DDS et la génération DDL sont intégralement fonctionnelles |
-| Les scripts DDL générés devront être réintégrés dans ARCAD manuellement après validation | Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans les en-têtes des scripts générés |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
+|--------------------------------------|---------------------------|
+| Exporter manuellement l'historique des versions DDS depuis ARCAD | Le MCP ARCAD peut exposer l'historique directement dans le contexte Bob |
+| Vérifier manuellement si un PF est "en promotion" dans ARCAD | Le MCP ARCAD peut vérifier le statut de promotion directement depuis Bob |
+| Réintégrer manuellement les scripts DDL dans ARCAD après validation | Le MCP ARCAD peut versionner et intégrer les scripts automatiquement |
 
-> 💡 **Contournement :** avant de démarrer UC 14, exporter depuis ARCAD la liste des PF/LF managés et leur statut (promotions en cours). Charger cet export dans le contexte Bob pour que la génération DDL tienne compte des objets actuellement verrouillés.
+> 💡 **Dans les deux cas :** avant de démarrer UC 14, vérifier dans ARCAD la liste des PF/LF managés et leur statut (promotions en cours) pour que la génération DDL tienne compte des objets actuellement verrouillés.
 
 ---
 

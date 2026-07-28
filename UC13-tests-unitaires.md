@@ -207,17 +207,17 @@ Le mode **IBM i Developer** pré-charge le contexte IBM i dans chaque conversati
 
 > ⚠️ **Bibliothèque cible en Agent :** les programmes de test RPGUnit doivent être créés dans une bibliothèque de test dédiée (ex. `APPVTETEST`) — jamais dans les bibliothèques source gérées par ARCAD. Cette séparation est critique pour ne pas polluer le versioning ARCAD.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-ACME utilise **ARCAD** pour la gestion du code source et les déploiements IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
 **Impact sur UC 13 : limité.** Les tests RPGUnit s'exécutent directement sur l'IBM i de test via IBM i MCP, indépendamment d'ARCAD.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même | Contournement |
-|---------------------------------------|------------------------------|---------------|
-| Les sources de test ne sont pas automatiquement enregistrés dans ARCAD | IBM i MCP (Agent) crée les membres dans `QTESTSRC` et exécute RPGUnit indépendamment | Réintégrer manuellement les sources de test dans ARCAD après chaque session (même workflow UC 7-8) |
-| Impossible de prouver quelle version exacte du programme a été testée | Le fichier `*-diff-restr-*.md` ou `*-rpg-converti-*.md` fournit le delta des modifications couvertes | Inclure dans chaque rapport le **manifest de traçabilité** ci-dessous |
-| Impossible de déclencher un pipeline ARCAD post-test depuis Bob | Bob exécute les tests via IBM i MCP | N/A — l'intégration pipeline est l'objet de UC 16 |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible | Remarque |
+|--------------------------------------|---------------------------|----------|
+| Réintégrer manuellement les sources de test dans ARCAD après chaque session | Le MCP ARCAD peut enregistrer les sources de test dans ARCAD directement | Même workflow UC 7-8 |
+| Inclure manuellement le **manifest de traçabilité** dans chaque rapport | Le MCP ARCAD peut alimenter automatiquement la traçabilité version/test | Le fichier `*-diff-restr-*.md` fournit le delta couvert dans les deux cas |
+| Déclencher manuellement un pipeline ARCAD post-test | Le MCP ARCAD peut déclencher le pipeline depuis Bob | L'intégration pipeline complète est l'objet de UC 16 |
 
 **Manifest de traçabilité obligatoire dans chaque `*-rapport-test-*.md` :**
 

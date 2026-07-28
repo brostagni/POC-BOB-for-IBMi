@@ -133,7 +133,7 @@ Ces deux tracks peuvent être menées en parallèle par des sous-équipes diffé
 
 | Ordre | UC | Justification |
 |-------|----|---------------|
-| 13 | **UC 16 — CI/CD avec ARCAD** | Capstone du POC : intégrer tout le cycle (build, test, déploiement) dans un pipeline automatisé. Ne démarrer qu'une fois le code stable et les tests passants. Vérifier préalablement la disponibilité de la licence ARCAD sur l'IBM i de test. **Note : le MCP ARCAD n'est pas actif dans ce POC (voir section 5 ci-dessous) — la portée de UC 16 est adaptée en conséquence.** |
+| 13 | **UC 16 — CI/CD avec ARCAD** | Capstone du POC : intégrer tout le cycle (build, test, déploiement) dans un pipeline automatisé via le MCP ARCAD. Ne démarrer qu'une fois le code stable et les tests passants. **UC 16 tire pleinement parti du MCP ARCAD — voir section 5 pour le contexte de ce POC de référence.** |
 
 ---
 
@@ -158,39 +158,41 @@ Ces deux tracks peuvent être menées en parallèle par des sous-équipes diffé
 | 11b | UC 11 — Objets SQL | Faible | Faible | ● ○ ○ |
 | 11c | UC 10 — Génération app | Élevé | Moyen — sans réflexion UX préalable, la conversion 5250 → Web sera un simple copier-coller sans valeur | ● ● ● |
 | 12 | UC 13 — Tests | Moyen | Élevé — sans tests, aucune garantie de non-régression sur les modernisations | ● ● ○ |
-| 13 | UC 16 — DevOps / ARCAD | Élevé | **Élevé** — MCP ARCAD non actif (incompatibilité version) : Bob ne peut pas piloter les pipelines directement ; portée de UC 16 réduite à la documentation et aux scripts | ● ● ○ |
+| 13 | UC 16 — DevOps / ARCAD | Élevé | **Fort potentiel avec MCP ARCAD** — Bob peut piloter les pipelines directement si MCP ARCAD disponible. Dans ce POC de référence, MCP non disponible : portée réduite à documentation et scripts | ● ● ○ |
 
 ---
 
-## 5. Contrainte transversale — ARCAD sans MCP
+## 5. Intégration ARCAD — contexte de ce POC de référence
 
-> ⚠️ **Contrainte identifiée dès la Phase 0 — à communiquer à l'équipe avant de démarrer.**
+> 💡 **ARCAD et Bob V2 sont pleinement compatibles lorsque le MCP ARCAD est disponible.** Ce POC de référence a été réalisé sans MCP ARCAD car la version ARCAD installée chez le client n'était pas compatible avec le MCP. Les adaptations décrites ci-dessous sont propres à ce contexte.
 
-ACME utilise **ARCAD** pour la gestion du code source IBM i (versioning, packaging, déploiement). La version ARCAD en production chez ACME n'est **pas compatible avec le MCP ARCAD** de Bob V2.
+> **Si le MCP ARCAD est disponible dans votre environnement**, les étapes manuelles de réintégration deviennent automatisables. N'hésitez pas à demander à Bob d'adapter les fiches UC en intégrant la disponibilité du MCP ARCAD.
 
-### Impact par phase
+### Impact par phase dans ce POC de référence (sans MCP ARCAD)
 
-| Phase | UC concernés | Impact | Adaptation |
-|-------|-------------|--------|-----------|
-| Phase 1 — Comprendre | UC 4, 5, 6 | **Faible** — ARCAD gère les versions, pas le code en lui-même. IBM i MCP accède aux sources directement dans les bibliothèques, indépendamment d'ARCAD | Ajouter le placeholder `⚠️ Historique ARCAD — à compléter manuellement` dans les livrables de spec technique (UC 6 Prompt 3) |
-| Phase 2 — Base de données | UC 14, 3 | **Faible** — même logique que Phase 1 | Aucune adaptation nécessaire |
-| Phase 3 — Code | UC 7, 8 | **Faible** — les modifications de code se font dans le workspace Bob, pas via ARCAD | Les sources modifiés devront être réintégrés dans ARCAD manuellement après la session Bob |
-| Phase 4 — Conversion/Dev | UC 1, 2, 9, 10, 11 | **Faible à moyen** — même logique Phase 3 | Définir un workflow de réintégration ARCAD en dehors de Bob |
-| Phase 5 — Tests | UC 13 | **Faible** | Les sources de test (`QTESTSRC`) et rapports sont créés hors ARCAD — réintégrer manuellement dans ARCAD si versioning souhaité. Inclure le **manifest de traçabilité** dans chaque `*-rapport-test-*.md` (OBJCREATED, CHANGE_TIMESTAMP, SOURCE_TIMESTAMP, SOURCE_FILE/LIBRARY/MEMBER) pour lier le rapport à l'objet exact testé |
-| Phase 6 — DevOps | **UC 16** | **Élevé** — UC 16 est centré sur ARCAD. Sans MCP, Bob ne peut pas lire les environnements, déclencher des builds, ni suivre les déploiements | Portée de UC 16 réduite : Bob documente le pipeline et génère des scripts, mais l'exécution reste manuelle dans l'interface ARCAD |
+| Phase | UC concernés | Impact | Sans MCP ARCAD | Avec MCP ARCAD disponible |
+|-------|-------------|--------|----------------|--------------------------|
+| Phase 1 — Comprendre | UC 4, 5, 6 | **Faible** | Ajouter le placeholder `⚠️ Historique ARCAD — à compléter manuellement` dans les livrables de spec technique (UC 6 Prompt 3) | L'historique ARCAD est intégrable automatiquement dans les specs |
+| Phase 2 — Base de données | UC 14, 3 | **Faible** | Réintégration manuelle des scripts DDL/SQL dans ARCAD | Scripts versionnés automatiquement via MCP ARCAD |
+| Phase 3 — Code | UC 7, 8 | **Faible** | Sources modifiés à réintégrer manuellement dans ARCAD après chaque session | Réintégration pilotée par Bob via MCP ARCAD |
+| Phase 4 — Conversion/Dev | UC 1, 2, 9, 10, 11 | **Faible à moyen** | Définir un workflow de réintégration ARCAD en dehors de Bob | Workflow de réintégration automatisé par MCP ARCAD |
+| Phase 5 — Tests | UC 13 | **Faible** | Sources de test et rapports à réintégrer manuellement dans ARCAD. Inclure le **manifest de traçabilité** dans chaque rapport | Traçabilité version/test alimentée automatiquement |
+| Phase 6 — DevOps | **UC 16** | **Fort potentiel** | Bob documente le pipeline et génère des scripts ; exécution manuelle dans ARCAD | **UC 16 pleinement opérationnel** — Bob pilote build, test et déploiement via MCP ARCAD |
 
-### Contournements disponibles
+### Sans MCP ARCAD — approches disponibles dans ce POC
 
-| Besoin | Contournement sans MCP ARCAD |
-|--------|------------------------------|
+| Besoin | Approche dans ce POC |
+|--------|----------------------|
 | Lire l'historique des modifications d'un objet | Exporter depuis ARCAD (CSV/texte) → charger dans le contexte Bob |
 | Connaître la liste des objets managés par ARCAD | Exporter la liste depuis ARCAD → charger dans le contexte Bob |
-| Déclencher un déploiement | Non contournable via Bob — exécution manuelle dans l'interface ARCAD |
-| Créer une tâche ARCAD depuis Bob | Non contournable — utiliser JIRA MCP comme alternative pour le suivi des tâches |
+| Déclencher un déploiement | Exécution manuelle dans l'interface ARCAD — Bob génère les scripts |
+| Créer une tâche ARCAD depuis Bob | Utiliser JIRA MCP comme alternative pour le suivi des tâches |
 
-### Recommandation
+### UC 16 — CI/CD avec ARCAD : fort potentiel
 
-Anticiper dès la Phase 0 avec l'équipe IT de ACME : vérifier si une mise à jour de la version ARCAD est envisageable avant UC 16, ou si une instance ARCAD compatible peut être déployée sur l'IBM i de test du POC. Si ce n'est pas possible, **recadrer UC 16 comme un UC de documentation du pipeline** plutôt que d'automatisation.
+UC 16 est conçu pour tirer pleinement parti du MCP ARCAD : Bob peut lire les environnements de déploiement, déclencher des builds, suivre les promotions et valider les pipelines directement depuis la conversation. **C'est le UC avec le plus fort gain lorsque le MCP ARCAD est disponible.**
+
+Dans le cadre de ce POC de référence (MCP ARCAD non disponible), la portée de UC 16 a été adaptée : Bob documente le pipeline de déploiement et génère les scripts ARCAD, mais l'exécution reste manuelle. Si votre environnement dispose du MCP ARCAD, demandez à Bob de reprendre UC 16 dans sa version complète.
 
 ---
 

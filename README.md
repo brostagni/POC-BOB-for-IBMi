@@ -83,7 +83,11 @@ Ces fiches sont des guides opérationnels prêts à l'emploi : chaque fiche déc
 
 ### Note sur ARCAD
 
-Ces fiches supposent qu'ARCAD est utilisé pour la gestion du code source IBM i. Si le **MCP ARCAD n'est pas disponible** (incompatibilité de version), les sources modifiés par Bob devront être réintégrés dans ARCAD manuellement après chaque session. UC16 (DevOps/ARCAD) est hors périmètre de ce dépôt pour cette raison.
+**ARCAD et Bob V2 sont pleinement compatibles lorsque le MCP ARCAD est disponible.** Ce dépôt est issu d'un POC de référence réalisé sans MCP ARCAD car la version ARCAD du client n'était pas compatible avec le MCP. Les fiches décrivent donc un mode de fonctionnement sans MCP ARCAD, avec des étapes de réintégration manuelle.
+
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites dans chaque fiche peuvent être automatisées. N'hésitez pas à demander à Bob de modifier les fiches UC en intégrant la disponibilité du MCP ARCAD.
+
+UC16 (DevOps/ARCAD) n'est pas couvert dans ce dépôt dans sa version complète, mais il représente **le UC avec le plus fort potentiel** lorsque le MCP ARCAD est disponible — Bob peut piloter l'intégralité du pipeline de déploiement IBM i.
 
 ---
 
@@ -186,7 +190,11 @@ Each guide is an operational runbook: prerequisites, Bob prompts, expected deliv
 
 ### Note on ARCAD
 
-These guides assume ARCAD is used for IBM i source management. If the **ARCAD MCP is not available** (version incompatibility), sources modified by Bob must be manually reintegrated into ARCAD after each session. UC16 (DevOps/ARCAD) is out of scope in this repository for this reason.
+**ARCAD and Bob V2 are fully compatible when the ARCAD MCP is available.** This repository is based on a reference POC conducted without the ARCAD MCP, because the client's ARCAD version was not compatible with the MCP. The guides therefore describe a workflow without ARCAD MCP, with manual reintegration steps.
+
+The ARCAD MCP was not available in this reference POC context (ARCAD version not compatible with the MCP). If the ARCAD MCP is available in your environment, the manual reintegration steps described in each guide can be automated. Feel free to ask Bob to adapt the UC guides to integrate ARCAD MCP availability.
+
+UC16 (DevOps/ARCAD) is not fully covered in this repository, but it represents **the use case with the highest potential** when the ARCAD MCP is available — Bob can drive the entire IBM i deployment pipeline directly.
 
 ---
 
@@ -207,6 +215,6 @@ These guides assume ARCAD is used for IBM i source management. If the **ARCAD MC
 | File | Description |
 |------|-------------|
 | `UC01` – `UC15` | Operational use-case guides |
-| `plan-poc-bob-acme.md` | Full POC roadmap: phases, UC ordering, ARCAD constraint, deliverables map |
+| `plan-poc-bob-acme.md` | Full POC roadmap: phases, UC ordering, ARCAD integration context, deliverables map |
 | `anonymisation-plan.md` | Anonymisation process documentation |
 | `README.md` | This file |

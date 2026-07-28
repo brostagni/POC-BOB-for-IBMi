@@ -157,19 +157,19 @@ Même logique de garde-fou que UC 4 : en mode Ask, Bob génère le source dans l
 
 > 💡 **Règle d'or pour UC 9 :** le mode Agent est autorisé **uniquement** pour la compilation (Prompt 2-bis) et la sauvegarde des livrables validés. Pendant la génération (Prompts 0 à 4), rester en mode Ask.
 
-### Spécificité ARCAD — MCP non disponible
+### Intégration ARCAD
 
-ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
 
-**Impact sur UC 9 : faible.** Les programmes générés sont de nouveaux membres sources (`QRPGSRC`) qui n'existent pas encore dans ARCAD. Ces nouveaux membres devront être enregistrés manuellement dans ARCAD après validation.
+**Impact sur UC 9 : faible.** Les programmes générés sont de nouveaux membres sources (`QRPGSRC`) qui n'existent pas encore dans ARCAD. Ces nouveaux membres devront être enregistrés dans ARCAD après validation.
 
-| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
-|--------------------------------------|------------------------------|
-| Impossible de créer automatiquement le nouveau membre dans ARCAD lors de la génération | IBM i MCP peut créer le membre directement dans les bibliothèques source — ARCAD le verra lors de la synchro manuelle |
-| Impossible de vérifier si un programme de même nom est déjà géré dans ARCAD | Vérification manuelle dans l'interface ARCAD avant de nommer le programme cible |
-| Les programmes générés ne sont pas automatiquement intégrés dans les packages de déploiement ARCAD | Réintégration manuelle — ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête de chaque source généré |
+| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
+|--------------------------------------|---------------------------|
+| Créer manuellement le nouveau membre dans ARCAD après la génération | IBM i MCP + MCP ARCAD peuvent créer le membre et l'enregistrer dans ARCAD directement |
+| Vérifier manuellement dans ARCAD qu'aucun programme de même nom n'est en cours de modification | Le MCP ARCAD peut vérifier les conflits de nommage directement depuis Bob |
+| Réintégration manuelle — ajouter `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans chaque source | Le placeholder n'est plus nécessaire — les programmes sont intégrés automatiquement dans ARCAD |
 
-> 💡 **Contournement :** avant de générer un programme, vérifier dans ARCAD qu'aucun membre de même nom n'est en cours de modification. Documenter le nom du programme généré dans le fichier `*-plan-generation-*.md` pour faciliter la réintégration ARCAD post-validation.
+> 💡 **Dans les deux cas :** avant de générer un programme, vérifier dans ARCAD qu'aucun membre de même nom n'est en cours de modification. Documenter le nom dans le fichier `*-plan-generation-*.md`.
 
 ---
 
