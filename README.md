@@ -83,9 +83,9 @@ Ces fiches sont des guides opérationnels prêts à l'emploi : chaque fiche déc
 
 ### Note sur ARCAD
 
-**ARCAD et Bob V2 sont pleinement compatibles lorsque le MCP ARCAD est disponible.** Ce dépôt est issu d'un POC de référence réalisé sans MCP ARCAD, car la version ARCAD du client n'était pas compatible avec le MCP. Les fiches décrivent donc un mode de fonctionnement avec réintégration manuelle. Si le MCP ARCAD est disponible dans votre environnement, ces étapes peuvent être automatisées. N'hésitez pas à demander à Bob d'adapter les fiches UC en intégrant cette disponibilité.
+**Ce dépôt décrit un POC réalisé sans MCP ARCAD**, car la version ARCAD du client n'était pas compatible au moment de l'étude. Les fiches reposent donc sur un fonctionnement avec réintégration manuelle. Si le MCP ARCAD est disponible dans votre environnement, ces fiches peuvent être adaptées pour exploiter une intégration plus automatisée avec ARCAD.
 
-Une fiche complémentaire anonyme est disponible pour préparer un futur POC avec MCP ARCAD actif : [`apport-mcp-arcad.md`](apport-mcp-arcad.md). Elle détaille, pour les UC 1 à 14, les apports attendus du MCP ARCAD, les bénéfices possibles, les limites, ainsi que plusieurs options de cadrage à challenger avant lancement.
+Une fiche complémentaire anonyme est disponible pour préparer un futur POC avec MCP ARCAD actif : [`apport-mcp-arcad.md`](apport-mcp-arcad.md). Elle détaille, pour les UC 1 à 14, les apports attendus du MCP ARCAD, les bénéfices possibles, les limites et plusieurs options de cadrage à challenger avant lancement.
 
 UC16 (DevOps/ARCAD) n'est pas couvert dans ce dépôt dans sa version complète, mais il représente **le UC avec le plus fort potentiel** lorsque le MCP ARCAD est disponible — Bob peut piloter l'intégralité du pipeline de déploiement IBM i.
 
@@ -190,9 +190,9 @@ Each guide is an operational runbook: prerequisites, Bob prompts, expected deliv
 
 ### Note on ARCAD
 
-**ARCAD and Bob V2 are fully compatible when the ARCAD MCP is available.** This repository is based on a reference POC conducted without the ARCAD MCP, because the client's ARCAD version was not compatible with the MCP. The guides therefore describe a workflow with manual reintegration. If the ARCAD MCP is available in your environment, these steps can be automated. Feel free to ask Bob to adapt the UC guides accordingly.
+**This repository documents a POC conducted without the ARCAD MCP**, because the client's ARCAD version was not compatible at the time of the study. The guides therefore rely on a workflow with manual reintegration. If the ARCAD MCP is available in your environment, these guides can be adapted to support a more automated integration with ARCAD.
 
-An additional anonymised companion note is available to prepare a future POC with ARCAD MCP enabled: [`apport-mcp-arcad.md`](apport-mcp-arcad.md). It details, for UC 1 to 14, the expected contribution of ARCAD MCP, the potential benefits, the limits, and several framing options to challenge before launch.
+An additional anonymised companion note is available to prepare a future POC with ARCAD MCP enabled: [`apport-mcp-arcad.md`](apport-mcp-arcad.md). It details, for UC 1 to 14, the expected contribution of ARCAD MCP, the potential benefits, the limits and several framing options to challenge before launch.
 
 UC16 (DevOps/ARCAD) is not fully covered in this repository, but it represents **the use case with the highest potential** when the ARCAD MCP is available — Bob can drive the entire IBM i deployment pipeline directly.
 
