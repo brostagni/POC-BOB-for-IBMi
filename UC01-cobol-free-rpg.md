@@ -214,7 +214,6 @@ Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (
 > La mise en place de l'atelier Bob Industrialisation permet de simplifier le travail sur cette section :
 > les prompts récurrents (Prompt 0, prompts de conversion, prompt-bis) sont disponibles sous forme de **commandes slash personnalisées** (`/qualify`, `/conv-cobol-data`, `/conv-cobol-proc`, `/test-compile`, etc.).
 > Au lieu de copier-coller le bloc de code, il suffit de taper la commande correspondante dans la conversation Bob.
-> Voir la fiche `atelier-bob-industrialisation-prompts.md` pour la liste complète des commandes disponibles.
 
 ### Prompt 0 — Qualification et choix de stratégie
 

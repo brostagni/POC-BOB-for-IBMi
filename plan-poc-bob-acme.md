@@ -351,7 +351,7 @@ Pour préparer un **futur POC** avec MCP ARCAD disponible, se référer à la no
 | UC 10 — Génération d'applications | `UC10-generation-app.md` | ⬜ Fiche à créer | — |
 | UC 11 — Objets SQL | `UC11-objets-sql.md` | ⬜ Fiche à créer | — |
 | UC 12 — Serveurs MCP | `UC12-mcp.md` | ⬜ Fiche à créer | — |
-| UC 13 — Tests unitaires | `UC13-tests-unitaires.md` | ✅ Figée — validée après 5 cycles de révision | Neutralisation RPGUnit : copybook/assertions/hooks/commande de compilation découverts depuis l'installation réelle (P0). Ordre P4 : `VALUES QSYS2.JOB_NAME` + `VALUES CURRENT_TIMESTAMP` *avant* `RUCALLTST`. Spool filtré par `CREATE_TIMESTAMP` (pas QPRINT hardcodé). `JOB_STATUS` / `COMPLETION_STATUS` dissociés. Manifest ARCAD : OBJCREATED, CHANGE_TIMESTAMP, SOURCE_TIMESTAMP. 8 prompts dans `U_BOB_IBM/.bob/prompts/` |
+| UC 13 — Tests unitaires | `UC13-tests-unitaires.md` | ✅ Figée — validée après 5 cycles de révision | Neutralisation RPGUnit : copybook/assertions/hooks/commande de compilation découverts depuis l'installation réelle (P0). Ordre P4 : `VALUES QSYS2.JOB_NAME` + `VALUES CURRENT_TIMESTAMP` *avant* `RUCALLTST`. Spool filtré par `CREATE_TIMESTAMP` (pas QPRINT hardcodé). `JOB_STATUS` / `COMPLETION_STATUS` dissociés. Manifest ARCAD : OBJCREATED, CHANGE_TIMESTAMP, SOURCE_TIMESTAMP. 8 prompts dans `.bob/prompts/` |
 | UC 14 — DDS → DDL | `UC14-dds-ddl.md` | ✅ Fiche de référence — testée POC | — |
 | UC 15 — Maîtrise de Bob | `UC15-maitrise-bob.md` | ⬜ Fiche à créer | — |
 | UC 16 — CI/CD ARCAD | `UC16-cicd-arcad.md` | ⬜ Fiche à créer | Portée réduite — MCP ARCAD non actif (voir section 5) |

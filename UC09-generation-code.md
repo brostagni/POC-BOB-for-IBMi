@@ -177,7 +177,6 @@ Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (
 
 > 💡 **Atelier Bob Industrialisation**
 > Les prompts récurrents (Prompt 0, génération header, génération logique) peuvent être disponibles sous forme de **commandes slash personnalisées** dans le mode "ACME Developer" une fois celui-ci créé.
-> Voir la fiche `atelier-bob-industrialisation-prompts.md` pour la liste complète des commandes disponibles.
 
 ### Prompt 0 — Qualification du programme à générer
 

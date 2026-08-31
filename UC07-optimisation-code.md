@@ -14,6 +14,8 @@
 >
 > **Mode Bob recommandé :** IBM i Developer (mode Ask pour l'analyse et la génération, Agent pour la compilation de test et la sauvegarde)
 
+> ⚠️ **UC 7 et UC 8 ne se lancent jamais dans la même session Bob, ni via la même demande en mode Plan.** UC 7 d'abord, compiler et valider fonctionnellement, puis ouvrir une **nouvelle conversation** pour UC 8. Si les deux sont demandés ensemble, Bob mélange les passes de renommage (UC 7) et d'extraction de modules (UC 8) dans un seul diff — les erreurs deviennent intraçables et la compilation produit plusieurs centaines d'erreurs. Voir aussi la règle correspondante dans la fiche UC 8.
+
 ---
 
 ## Objectif
@@ -209,6 +211,8 @@ Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (
 
 > 💡 **Dans les deux cas :** avant de démarrer UC 7 sur un programme, vérifier dans ARCAD qu'il n'est pas en cours de modification par un autre développeur (promotion en cours). Charger la liste des objets verrouillés dans le contexte Bob pour éviter de travailler sur une version qui sera écrasée.
 
+> ⚠️ **Écriture dans le fichier ARCAD ouvert — pas dans QSYS directement.** Quand le programme est ouvert depuis une version ARCAD (via Code for IBM i → Object Browser → clic droit → Open in Editor), Bob doit écrire les modifications dans **ce fichier déjà ouvert dans l'éditeur**, pas dans le membre `QSYS/QRPGSRC`. Si Bob propose d'écrire via un chemin `QSYS` absolu et affiche un WARNING, interrompre et préciser explicitement : *"Modifie le fichier actuellement ouvert dans l'éditeur — [NOM_LIB]/QRPGSRC([NOM_PROGRAMME]) — ne pas écrire dans QSYS directement."* Le mode **Ask** pendant la génération du diff empêche ce cas : Bob produit le diff dans le chat, et c'est l'équipe qui décide où et comment l'appliquer.
+
 ---
 
 ## Prompts clés
@@ -380,6 +384,11 @@ Règles de renommage :
 - Utiliser le style camelCase : wkNomVariable (préfixe selon le rôle : wk = travail,
   li = ligne/itération, fl = flag/indicateur, nb = compteur, dt = date)
 - Nommer selon l'usage, pas selon le type (wkMontantHT et non wkDecimal12v2)
+- **Format fixe ou mixte : limiter les noms à 10 caractères maximum** — en RPG fixe, les
+  colonnes Facteur 1, Facteur 2 et Résultat ont des largeurs fixes. Un nom de plus de 10
+  caractères provoque des erreurs de dépassement de colonne à la compilation. Si le programme
+  est en style Fixe ou Mixte (vérifié au Prompt 0), les noms proposés doivent respecter cette
+  contrainte : `wkMtHT` et non `wkMontantHorsTaxe`.
 - Pour les indicateurs : créer une variable DCL-S [NOM_DESCRIPTIF] IND INZ(*OFF)
   et remplacer chaque occurrence de *INxx par cette variable
 - Propager chaque renommage à **toutes** les occurrences dans le source — pas de renommage partiel

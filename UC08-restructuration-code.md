@@ -14,6 +14,8 @@
 >
 > **Mode Bob recommandé :** IBM i Developer (mode Ask pour l'analyse et la conception, Agent pour la compilation de test et la sauvegarde)
 
+> ⚠️ **UC 8 ne se lance jamais dans la même session Bob qu'UC 7, ni via la même demande en mode Plan.** UC 7 doit être terminé, compilé sans erreur et validé fonctionnellement avant d'ouvrir une **nouvelle conversation** pour UC 8. Demander à Bob de "faire UC 7 et UC 8" en une seule passe mélange les renommages de variables et l'extraction de modules dans un même diff — les erreurs deviennent intraçables et la compilation produit plusieurs centaines d'erreurs sur un programme de 1000 lignes. Voir aussi la règle correspondante dans la fiche UC 7.
+
 ---
 
 ## Objectif
@@ -221,6 +223,8 @@ Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (
 | Charger un export ARCAD pour accéder à l'historique du programme | L'historique de version est accessible directement via le MCP ARCAD |
 
 > 💡 **Dans les deux cas :** au début de chaque session UC 8, vérifier dans ARCAD la liste des programmes du périmètre et leur statut. Créer un checkpoint sur les membres à modifier avant de démarrer.
+
+> ⚠️ **Écriture dans le fichier ARCAD ouvert — pas dans QSYS directement.** Quand le programme est ouvert depuis une version ARCAD (via Code for IBM i → Object Browser → clic droit → Open in Editor), toutes les écritures de Bob (programme principal modifié, nouveaux modules extraits) doivent cibler les membres dans la **bibliothèque source ARCAD ouverte**, pas un chemin `QSYS` absolu. Si Bob affiche un WARNING et propose un chemin `QSYS`, interrompre et préciser : *"Écris dans [NOM_LIB]/QRPGSRC([NOM_PROGRAMME]) — ne pas écrire dans QSYS directement."* Le mode **Ask** pendant la génération empêche ce cas : Bob produit le code dans le chat, et c'est l'équipe qui valide avant tout `write_member`.
 
 ---
 
