@@ -28,6 +28,8 @@ Avant de démarrer les use cases, chaque membre de l'équipe doit avoir complét
 
 | N° | Catégorie | Intitulé | Sous-cas |
 |----|-----------|----------|----------|
+| 17 | Utilisation de BOB | Bob en équipe : workspace d'entreprise | Workspace entreprise partagé (rules, skills, modes, MCP) ; Workspace projet ; `/init` et AGENTS.md ; Poste développeur |
+| 18 | Utilisation de BOB | Stratégie Skills : industrialisation des UC | Création de skills réutilisables ; source unique de vérité UCxx.md → SKILL.md ; roadmap skills ; cycle de vie |
 | 1 | Conversion FREE RPG | Du COBOL vers le FREE RPG | COBOL → FREE RPG |
 | 2 | Conversion FREE RPG | Du RPG Colonné vers le FREE RPG | RPG IV colonné → FREE ; RPG III → FREE |
 | 3 | Modernisation | Accès natif base de données → SQL embarqué | Conversion programme / partie |
@@ -52,13 +54,15 @@ Avant de démarrer les use cases, chaque membre de l'équipe doit avoir complét
 ### Séquence globale
 
 ```
-UC 15 + UC 12 ⚡ (enabler transversal MCP — activer dès la Phase 0)
-  → UC 4 → 5 → 6
-    → UC 14 + UC 3 (en parallèle possible)
-      → UC 7 → UC 8
-        → [UC 1 & UC 2]  ‖  [UC 9, UC 11, UC 10]  (2 tracks parallèles)
-          → UC 13
-            → UC 16
+UC 17 ⚡ (workspace entreprise — activer avant tout autre UC)
+  → UC 18 ⚡ (stratégie skills — créer les skills sur la base du workspace entreprise)
+    → UC 15 + UC 12 ⚡ (onboarding Bob + enabler transversal MCP)
+      → UC 4 → 5 → 6
+        → UC 14 + UC 3 (en parallèle possible)
+          → UC 7 → UC 8
+            → [UC 1 & UC 2]  ‖  [UC 9, UC 11, UC 10]  (2 tracks parallèles)
+              → UC 13
+                → UC 16
 ```
 
 ---
@@ -67,6 +71,8 @@ UC 15 + UC 12 ⚡ (enabler transversal MCP — activer dès la Phase 0)
 
 | Ordre | UC | Justification |
 |-------|----|---------------|
+| 0 ⚡ | **UC 17 — Bob en équipe** | À mettre en place avant tout autre UC. Crée le socle commun : repo entreprise avec les normes ACME converties en rules Bob, les modes personnalisés, les skills et les MCP partagés. Sans ce socle, chaque développeur configure Bob différemment et les livrables ne sont pas cohérents. Durée : 2 à 4 heures pour le référent Bob, puis 30 min d'onboarding par développeur. |
+| 0b ⚡ | **UC 18 — Stratégie Skills** | Immédiatement après UC17 : transformer les fiches UCxx.md en skills Bob réutilisables. Le skill UC07 existe déjà — créer les skills UC04, UC05, UC14, UC06, UC08, UC03 dans cet ordre. Sans skills, chaque développeur doit connaître la séquence des prompts et la gérer manuellement. |
 | 1 | **UC 15 — Maîtrise de Bob** | L'équipe doit être autonome sur Bob avant tout autre use case : navigation entre les modes (ASK, Code, Plan, Agent), création et import de modes personnalisés, gestion des Bob Coins. Le lab Flight400 sert de support pratique. Sans cette phase, les autres UC seront sous-exploités. |
 | 2 ⚡ | **UC 12 — Serveurs MCP** | Enabler transversal à activer dès la Phase 0, en parallèle de UC 15. L'accès aux MCP JIRA et Confluence accélère tous les UC suivants : lecture des tickets pour contextualiser le code, publication automatique des docs produites en Phase 1, création d'issues depuis les anomalies détectées. Nécessite la préparation des droits API JIRA/Confluence avec l'équipe IT du client — ne pas attendre la dernière minute. |
 
@@ -143,6 +149,8 @@ Ces deux tracks peuvent être menées en parallèle par des sous-équipes diffé
 
 | Ordre | UC | Difficulté Bob | Risque métier (si absence de préparation) | Bob Coins |
 |-------|----|---------------|-------------------------------------------|-----------|
+| 0 ⚡ | UC 17 — Bob en équipe | Faible | **Élevé** — sans socle commun, chaque dev configure Bob différemment : normes ignorées, livrables incohérents, onboarding lent | ● ○ ○ |
+| 0b ⚡ | UC 18 — Stratégie Skills | Faible | Moyen — sans skills, les UC sont utilisables mais moins fluides ; perte d'efficacité et d'homogénéité entre développeurs | ● ○ ○ |
 | 1 | UC 15 — Maîtrise de Bob | Faible | Nul | ● ○ ○ |
 | 2 ⚡ | UC 12 — MCP (enabler transversal) | Moyen (config) | Élevé — sans MCP, les autres UC perdent en efficacité et la doc ne se publie pas automatiquement | ● ○ ○ |
 | 3 | UC 4 — Compréhension | Faible | Moyen — moderniser sans comprendre le code = risque de casser la logique métier | ● ○ ○ |
@@ -339,6 +347,8 @@ Pour préparer un **futur POC** avec MCP ARCAD disponible, se référer à la no
 
 | UC | Fiche | Statut | Notes |
 |----|-------|--------|-------|
+| UC 17 — Bob en équipe | `UC17-bob-en-equipe.md` | ✅ Fiche créée | — |
+| UC 18 — Stratégie Skills | `UC18-strategie-skills.md` | ✅ Fiche créée | Skill UC07 existant — 7 autres à créer |
 | UC 1 — COBOL → FREE RPG | `UC01-cobol-free-rpg.md` | ✅ Figée — prête à distribuer | Correction `READ(E)` conditionnel, règle `(E)` clarifiée, `**FREE` directive, `%ERROR` sans paramètre, `MOVE/DIVIDE/STOP RUN` encadrés, architecture hybride COBOL+RPG, golden master obligatoire |
 | UC 2 — RPG Colonné → FREE | `UC02-rpg-colonne-free.md` | ✅ Figée — prête à distribuer | Détection RPG III vs RPG IV, `MOVE/MOVEL` protocole complet, indicateurs INDARA, cycle L1–L9 → UC 8, séquence Prompt 2→3→4→4-bis pour STANDARD/COMPLEXE, `SETON/SETOF` non compilables en fully free-form, `CHAIN/READ` formes conditionnelles, `DCL-PI` au Prompt 2 |
 | UC 3 — SQL embarqué | `UC03-sql-embarque.md` | ✅ Fiche de référence — testée POC | — |

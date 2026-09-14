@@ -8,21 +8,23 @@
 
 ## Présentation
 
-Ce dépôt contient les **fiches pratiques d'un POC IBM Bob sur IBM i** : 15 use cases couvrant la modernisation d'applications RPG/COBOL, la documentation, le développement, les tests unitaires et l'activation des serveurs MCP.
+Ce dépôt contient les **fiches pratiques d'un POC IBM Bob sur IBM i** : 17 use cases couvrant la mise en place du workspace d'équipe, la stratégie skills, la modernisation d'applications RPG/COBOL, la documentation, le développement, les tests unitaires et l'activation des serveurs MCP.
 
 Ces fiches sont des guides opérationnels prêts à l'emploi : chaque fiche décrit les prérequis, les prompts à utiliser dans Bob, les livrables attendus, les pièges à éviter et une check-list de validation. Elles sont conçues pour être utilisées directement en session Bob, mode IBM i Developer.
 
-**Ce que ce dépôt n'est pas :** un tutoriel général sur Bob ou sur IBM i. Les fiches supposent que Bob est installé, que la connexion IBM i est configurée, et que l'équipe a complété l'UC 15 (onboarding Bob).
+**Ce que ce dépôt n'est pas :** un tutoriel général sur Bob ou sur IBM i. Les fiches supposent que Bob est installé, que la connexion IBM i est configurée, et que l'équipe a complété les UC 17 et UC 15 (workspace d'équipe + onboarding Bob).
 
 ---
 
-## Structure du POC — 6 phases, 15 use cases
+## Structure du POC — 6 phases, 17 use cases
 
 ### Phase 0 — Onboarding Bob
 
 | Fiche | Titre | Description courte |
 |-------|-------|-------------------|
-| [UC15](UC15-maitrise-bob.md) | Maîtrise de Bob | Modes Ask/Agent/Plan, modes personnalisés, gestion des Bob Coins — à faire en premier |
+| [UC17](UC17-bob-en-equipe.md) | Bob en équipe ⚡ | Workspace entreprise partagé (rules, modes, skills, MCP) — à faire en tout premier |
+| [UC18](UC18-strategie-skills.md) | Stratégie Skills ⚡ | Transformer les fiches UCxx en skills Bob réutilisables — juste après UC17 |
+| [UC15](UC15-maitrise-bob.md) | Maîtrise de Bob | Modes Ask/Agent/Plan, modes personnalisés, gestion des Bob Coins |
 | [UC12](UC12-mcp-enabler.md) | Serveurs MCP ⚡ | Activation JIRA, Confluence, IBM i MCP, IBM i Database MCP — enabler transversal |
 
 ### Phase 1 — Comprendre avant de moderniser
@@ -74,12 +76,14 @@ Ces fiches sont des guides opérationnels prêts à l'emploi : chaque fiche déc
 
 ## Comment utiliser ces fiches
 
-1. **Commencer par UC15** — l'équipe doit maîtriser Bob avant tout autre use case.
-2. **Activer UC12 dès la Phase 0** — les MCP JIRA/Confluence/IBM i accélèrent tous les UC suivants.
-3. **Respecter l'ordre des phases** — chaque phase produit des livrables qui sont les inputs de la phase suivante.
-4. **Utiliser le mode IBM i Developer** dans Bob — il est pré-configuré pour le contexte IBM i.
-5. **Charger les fichiers sources dans l'éditeur** avant de démarrer un prompt (Open in Editor via Code for IBM i).
-6. **Sauvegarder chaque livrable** avec la convention `{appArcad}-{fonction}-{composant}-{type}-{YYYYMMDD-HHmm}.md`.
+1. **Commencer par UC17** — créer le workspace d'équipe partagé (rules, modes, skills) avant tout le reste.
+2. **Enchaîner avec UC18** — transformer les fiches UC en skills Bob pour industrialiser les workflows.
+3. **Puis UC15** — l'équipe doit maîtriser Bob avant tout autre use case.
+4. **Activer UC12 dès la Phase 0** — les MCP JIRA/Confluence/IBM i accélèrent tous les UC suivants.
+5. **Respecter l'ordre des phases** — chaque phase produit des livrables qui sont les inputs de la phase suivante.
+6. **Utiliser le mode IBM i Developer** dans Bob — il est pré-configuré pour le contexte IBM i.
+7. **Charger les fichiers sources dans l'éditeur** avant de démarrer un prompt (Open in Editor via Code for IBM i).
+8. **Sauvegarder chaque livrable** avec la convention `{appArcad}-{fonction}-{composant}-{type}-{YYYYMMDD-HHmm}.md`.
 
 ### Note sur ARCAD
 
@@ -115,21 +119,23 @@ UC16 (DevOps/ARCAD) n'est pas couvert dans ce dépôt dans sa version complète,
 
 ## Overview
 
-This repository contains **practical use-case guides from an IBM Bob POC on IBM i**: 15 use cases covering RPG/COBOL application modernisation, documentation, code generation, unit testing, and MCP server activation.
+This repository contains **practical use-case guides from an IBM Bob POC on IBM i**: 17 use cases covering enterprise workspace setup, skills strategy, RPG/COBOL application modernisation, documentation, code generation, unit testing, and MCP server activation.
 
 Each guide is an operational runbook: prerequisites, Bob prompts, expected deliverables, pitfalls to avoid, and a validation checklist. They are designed to be used directly in a Bob session, IBM i Developer mode.
 
-**What this repository is not:** a general tutorial on Bob or IBM i. The guides assume Bob is installed, the IBM i connection is configured, and the team has completed UC15 (Bob onboarding).
+**What this repository is not:** a general tutorial on Bob or IBM i. The guides assume Bob is installed, the IBM i connection is configured, and the team has completed UC17 and UC15 (enterprise workspace + Bob onboarding).
 
 ---
 
-## POC Structure — 6 Phases, 15 Use Cases
+## POC Structure — 6 Phases, 17 Use Cases
 
 ### Phase 0 — Bob Onboarding
 
 | Guide | Title | Summary |
 |-------|-------|---------|
-| [UC15](UC15-maitrise-bob.md) | Mastering Bob | Ask/Agent/Plan modes, custom modes, Bob Coins management — do this first |
+| [UC17](UC17-bob-en-equipe.md) | Bob for Teams ⚡ | Shared enterprise workspace (rules, modes, skills, MCP) — set this up first |
+| [UC18](UC18-strategie-skills.md) | Skills Strategy ⚡ | Turn UC guides into reusable Bob skills — right after UC17 |
+| [UC15](UC15-maitrise-bob.md) | Mastering Bob | Ask/Agent/Plan modes, custom modes, Bob Coins management |
 | [UC12](UC12-mcp-enabler.md) | MCP Servers ⚡ | Activate JIRA, Confluence, IBM i MCP, IBM i Database MCP — cross-cutting enabler |
 
 ### Phase 1 — Understand Before Modernising
@@ -181,12 +187,14 @@ Each guide is an operational runbook: prerequisites, Bob prompts, expected deliv
 
 ## How to Use These Guides
 
-1. **Start with UC15** — the team must be comfortable with Bob before any other use case.
-2. **Activate UC12 in Phase 0** — JIRA/Confluence/IBM i MCPs accelerate all subsequent use cases.
-3. **Follow the phase order** — each phase produces deliverables that are inputs for the next phase.
-4. **Use IBM i Developer mode** in Bob — it is pre-configured for the IBM i context.
-5. **Load source files in the editor** before starting a prompt (Open in Editor via Code for IBM i).
-6. **Save every deliverable** using the naming convention `{appArcad}-{function}-{component}-{type}-{YYYYMMDD-HHmm}.md`.
+1. **Start with UC17** — set up the shared enterprise workspace (rules, modes, skills) before anything else.
+2. **Then UC18** — turn the UC guides into Bob skills to industrialise workflows for the whole team.
+3. **Then UC15** — the team must be comfortable with Bob before any other use case.
+4. **Activate UC12 in Phase 0** — JIRA/Confluence/IBM i MCPs accelerate all subsequent use cases.
+5. **Follow the phase order** — each phase produces deliverables that are inputs for the next phase.
+6. **Use IBM i Developer mode** in Bob — it is pre-configured for the IBM i context.
+7. **Load source files in the editor** before starting a prompt (Open in Editor via Code for IBM i).
+8. **Save every deliverable** using the naming convention `{appArcad}-{function}-{component}-{type}-{YYYYMMDD-HHmm}.md`.
 
 ### Note on ARCAD
 
@@ -214,8 +222,7 @@ UC16 (DevOps/ARCAD) is not fully covered in this repository, but it represents *
 
 | File | Description |
 |------|-------------|
-| `UC01` – `UC15` | Operational use-case guides |
+| `UC01` – `UC15`, `UC17`, `UC18` | Operational use-case guides |
 | `plan-poc-bob-acme.md` | Full POC roadmap: phases, UC ordering, ARCAD integration context, deliverables map |
 | `apport-mcp-arcad.md` | Companion analysis for a future POC with ARCAD MCP: impact by use case (UC1–UC14), benefits, limits, and framing options |
-| `anonymisation-plan.md` | Anonymisation process documentation |
 | `README.md` | This file |
