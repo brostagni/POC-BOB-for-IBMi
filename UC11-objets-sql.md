@@ -159,25 +159,27 @@ Fichiers à ouvrir pour chaque session UC 11 :
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | Mode **Ask** (ou ACME IBM i Review) pour la qualification et la génération, **Agent** (ou ACME IBM i Execute) pour RUNSQLSTM et la sauvegarde. Ne pas présenter Ask/Agent comme des sous-modes d'IBM i Developer — ce sont des modes pairs. |
+| **Mode Bob** | **IBM i Database** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask pour la qualification et la génération, Agent pour RUNSQLSTM et la sauvegarde. |
 | **Scope** | Library List → schéma SQL / bibliothèque cible ACME |
 | **MCP central** | IBM i Database MCP (test de création RUNSQLSTM, introspection QSYS2) |
 | **MCP secondaire** | IBM i MCP (lecture de sources RPG si la procédure migre de la logique d'un programme existant — lien avec UC 3) |
 | **MCP différés** | Confluence MCP (publication des scripts DDL, si token disponible) |
 
-### Pourquoi Ask pour la génération SQL ?
+### Pourquoi le mode IBM i Database pour la génération d'objets SQL ?
 
-En mode Ask, Bob génère le DDL dans le chat — l'équipe peut le relire, le corriger, itérer sans risque avant de sauvegarder ou d'exécuter. En mode Agent pendant la génération, Bob pourrait exécuter un `CREATE TABLE` incorrect ou écraser un objet existant.
+Le mode **IBM i Database** est spécialisé pour Db2 for i : curseurs SQL, SQLCODE, QSYS2, DDL, Index Advisor, procédures stockées. Bob génère le DDL dans le chat — l'équipe le relit, le corrige, itère sans risque avant d'autoriser l'exécution. Exécuter un `CREATE TABLE` incorrect peut écraser un objet existant.
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification de l'objet (Prompt 0) | **Ask** | Analyse le besoin, détermine le type et la catégorie, liste les dépendances, recommande la séquence |
-| Génération des DDL (Prompts 1, 1V, 1I, 2, 3, 4) | **Ask** | Génère `CREATE TABLE`, `CREATE VIEW`, `CREATE INDEX`, `CREATE PROCEDURE`, `CREATE TRIGGER`, `CREATE FUNCTION` dans le chat |
-| Test de création (Prompt 1-bis) | **Agent** | Exécute le script DDL sur l'IBM i de test, analyse les messages SQL, propose les corrections |
-| Plan périmètre (Prompt 5) | **Ask** | Génère le plan de génération dans le chat |
-| Sauvegarde des livrables | **Agent** | Écrit les fichiers `.md` dans le workspace — uniquement une fois validés |
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Qualification de l'objet (Prompt 0) | Génère dans le chat — pas d'écriture | Analyse le besoin, détermine le type et la catégorie, liste les dépendances, recommande la séquence |
+| Génération des DDL (Prompts 1, 1V, 1I, 2, 3, 4) | Génère dans le chat — pas d'écriture | Génère `CREATE TABLE`, `CREATE VIEW`, `CREATE INDEX`, `CREATE PROCEDURE`, `CREATE TRIGGER`, `CREATE FUNCTION` dans le chat |
+| Test de création (Prompt 1-bis) | Écriture et exécution autorisées — après validation | Exécute le script DDL sur l'IBM i de test, analyse les messages SQL, propose les corrections |
+| Plan périmètre (Prompt 5) | Génère dans le chat — pas d'écriture | Génère le plan de génération dans le chat |
+| Sauvegarde des livrables | Écriture autorisée — après validation | Écrit les fichiers `.md` dans le workspace — uniquement une fois validés |
 
-> 💡 **Règle d'or pour UC 11 :** le mode Agent est autorisé **uniquement** pour le Prompt 1-bis (test de création) et la sauvegarde finale. Pendant toute la génération (Prompts 0 à 5), rester en mode Ask.
+> 💡 **Règle d'or pour UC 11 :** Bob génère dans le chat. L'exécution SQL (`RUNSQLSTM`) et la sauvegarde ne sont autorisées qu'après validation explicite de l'équipe.
+
+> 💡 **Sans Premium Package IBM i :** utiliser le mode Ask pour la qualification et la génération (Prompts 0 à 5), puis basculer en mode Agent uniquement pour le test de création (Prompt 1-bis) et la sauvegarde finale.
 
 ### Intégration ARCAD
 
