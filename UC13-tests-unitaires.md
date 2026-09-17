@@ -183,29 +183,31 @@ Ces fichiers sont les inputs directs des prompts UC 13. Les charger dans le chat
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — **Ask** pour Prompts 0-3 et génération P5 ; **Agent** pour Prompt 1-bis (compilation), Prompt 4 (exécution), exécution batch P5 et sauvegarde |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask pour l'analyse/génération, Agent pour la compilation, l'exécution et la sauvegarde. |
 | **Scope** | Library List → bibliothèque applicative ACME + bibliothèque de test |
 | **MCP actifs** | IBM i MCP (lecture sources, création membre de test, exécution RPGUnit) + IBM i Database MCP (données de test, requêtes QSYS2) |
 | **MCP non utilisés** | Confluence MCP (les rapports de test peuvent être publiés si token disponible, mais ce n'est pas prioritaire) |
 
-### Pourquoi IBM i Developer — Ask puis Agent ?
+### Pourquoi le mode IBM i Developer pour les tests unitaires ?
 
-Le mode **IBM i Developer** pré-charge le contexte IBM i dans chaque conversation. Pour UC 13, deux sous-modes sont utilisés successivement :
+Le mode **IBM i Developer** pré-charge le contexte IBM i (RPG, CL, IBM i MCP, RPGUnit) dans chaque conversation. Bob génère dans le chat — l'équipe valide le programme de test avant toute écriture ou compilation sur l'IBM i. Cette validation est le rempart contre la création d'un programme de test défectueux en bibliothèque de production.
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification (Prompt 0) | **Ask** | Lit le source modernisé, interroge QSYS2 pour la version RPGUnit, identifie les cas de test |
-| Génération du programme de test (Prompts 1, 2 SQL) | **Ask** | Génère le source RPGUnit dans le chat — aucune écriture sur l'IBM i |
-| Plan périmètre (Prompt 3) | **Ask** | Lit les livrables de diff pour construire le plan |
-| Compilation seule — Prompt 1-bis | **Agent** | Crée le membre source de test dans `QTESTSRC`, compile — pas d'exécution |
-| Exécution des tests (Prompt 4) | **Agent** | Exécute `RUCALLTST`, lit le rapport spool via `SYSTOOLS.SPOOLED_FILE_DATA` |
-| Génération du script CL de suite (Prompt 5) | **Ask** | Génère le source CL dans le chat |
-| Exécution batch de la suite | **Agent** | Lance `SBMJOB`, suit le job via `QSYS2.JOB_INFO`, lit les résultats |
-| Sauvegarde des livrables | **Agent** | Sauvegarde les fichiers `.md` dans `LIVRABLES/` |
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Qualification (Prompt 0) | Génère dans le chat — pas d'écriture | Lit le source modernisé, interroge QSYS2 pour la version RPGUnit, identifie les cas de test |
+| Génération du programme de test (Prompts 1, 2 SQL) | Génère dans le chat — pas d'écriture | Génère le source RPGUnit dans le chat — aucune écriture sur l'IBM i |
+| Plan périmètre (Prompt 3) | Génère dans le chat — pas d'écriture | Lit les livrables de diff pour construire le plan |
+| Compilation seule — Prompt 1-bis | Écriture et compilation autorisées — après validation | Crée le membre source de test dans `QTESTSRC`, compile — pas d'exécution |
+| Exécution des tests (Prompt 4) | Exécution autorisée — après compilation réussie | Exécute `RUCALLTST`, lit le rapport spool via `SYSTOOLS.SPOOLED_FILE_DATA` |
+| Génération du script CL de suite (Prompt 5) | Génère dans le chat — pas d'écriture | Génère le source CL dans le chat |
+| Exécution batch de la suite | Exécution autorisée — après validation | Lance `SBMJOB`, suit le job via `QSYS2.JOB_INFO`, lit les résultats |
+| Sauvegarde des livrables | Écriture autorisée — après validation | Sauvegarde les fichiers `.md` dans `LIVRABLES/` |
 
-> 💡 **Règle d'or pour UC 13 :** construire et valider le programme de test en Ask, créer et compiler en Agent (Prompt 1-bis), exécuter en Agent uniquement après compilation réussie (Prompt 4). Ne jamais exécuter sur la bibliothèque de **production** — toujours en bibliothèque de test.
+> 💡 **Règle d'or pour UC 13 :** Bob génère dans le chat. L'écriture (`write_member`), la compilation et l'exécution ne sont autorisées qu'après validation explicite de l'équipe. Ne jamais exécuter sur la bibliothèque de **production** — toujours en bibliothèque de test.
 
-> ⚠️ **Bibliothèque cible en Agent :** les programmes de test RPGUnit doivent être créés dans une bibliothèque de test dédiée (ex. `APPVTETEST`) — jamais dans les bibliothèques source gérées par ARCAD. Cette séparation est critique pour ne pas polluer le versioning ARCAD.
+> ⚠️ **Bibliothèque cible :** les programmes de test RPGUnit doivent être créés dans une bibliothèque de test dédiée (ex. `APPVTETEST`) — jamais dans les bibliothèques source gérées par ARCAD. Cette séparation est critique pour ne pas polluer le versioning ARCAD.
+
+> 💡 **Sans Premium Package IBM i :** utiliser le mode Ask pour les Prompts 0-3 et la génération P5, puis basculer en mode Agent uniquement pour le Prompt 1-bis (compilation), le Prompt 4 (exécution), l'exécution batch P5 et la sauvegarde.
 
 ### Intégration ARCAD
 
