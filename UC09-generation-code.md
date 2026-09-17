@@ -12,8 +12,7 @@
 >
 > **Gain Bob estimé :** ~8× — un programme batch STANDARD avec header, structures de données et logique CRUD généré en 20 min au lieu de 3 heures
 >
-> **Mode initial :** Ask ou ACME IBM i Review.
-> **Mode d'exécution :** Agent ou ACME IBM i Execute.
+> **Mode Bob recommandé :** IBM i Developer (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask pour la qualification/génération, Agent pour la compilation et la sauvegarde.
 
 ---
 
@@ -136,26 +135,28 @@ Ces fichiers doivent être disponibles dans le workspace Bob **avant** de démar
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | Mode **Ask** (ou ACME IBM i Review) pour la qualification et la génération, **Agent** (ou ACME IBM i Execute) pour CRTBNDRPG et la sauvegarde. Ne pas présenter Ask/Agent comme des sous-modes d'IBM i Developer — ce sont des modes pairs. |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : **Ask** pour la qualification/génération, **Agent** pour la compilation et la sauvegarde. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP (compilation CRTBNDRPG, lecture des sources de référence) |
 | **MCP différés** | IBM i Database MCP (introspection QSYS2 pour les programmes accédant des tables), Confluence MCP (publication, si token disponible) |
 
-### Pourquoi Ask pour la génération ?
+### Pourquoi le mode IBM i Developer pour la génération de code ?
 
-Même logique de garde-fou que UC 4 : en mode Ask, Bob génère le source dans le chat — l'équipe peut valider le header, les conventions de nommage et la logique avant de sauvegarder. En mode Agent, Bob pourrait écrire un source dans les bibliothèques avant qu'il ait été validé, ou modifier accidentellement un source existant.
+Le mode **IBM i Developer** apporte la connaissance RPG/ILE spécialisée pour toute la session — conventions de nommage IBM i, structures DCL-F/DCL-DS, templates CRUD, patterns ILE. La discipline de travail repose sur **la validation humaine avant toute écriture** : Bob génère le source dans le chat, l'équipe valide le header, les conventions et la logique, puis autorise explicitement l'écriture sur l'IBM i.
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification du programme (Prompt 0) | **Ask** | Analyse le besoin, détermine la catégorie (SIMPLE/STANDARD/COMPLEXE), recommande la séquence |
-| Génération header + DCL (Prompt 1) | **Ask** | Génère CTL-OPT, header documentaire, DCL-F, DCL-DS dans le chat |
-| Génération logique métier (Prompt 2) | **Ask** | Génère les procédures ou sous-routines, templates CRUD dans le chat |
-| Test de compilation (Prompt 2-bis) | **Agent** | Lance `CRTBNDRPG` via IBM i MCP, rapporte et corrige les erreurs |
-| Création du mode personnalisé (Prompt 3) | **Ask** | Génère le fichier `.bob/custom_modes.yaml` du mode "ACME Developer" dans le chat |
-| Plan de génération (Prompt 4) | **Ask** | Génère le backlog et le plan du mode dans le chat |
-| Sauvegarde des livrables | **Agent** | Écrit les fichiers `.md` dans le workspace — uniquement une fois validés |
+> 💡 **Sans Premium Package IBM i :** remplacer IBM i Developer par le mode **Ask** pour la qualification et la génération, et le mode **Agent** pour la compilation et la sauvegarde. La discipline de validation reste identique.
 
-> 💡 **Règle d'or pour UC 9 :** le mode Agent est autorisé **uniquement** pour la compilation (Prompt 2-bis) et la sauvegarde des livrables validés. Pendant la génération (Prompts 0 à 4), rester en mode Ask.
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Qualification du programme (Prompt 0) | Génère dans le chat — pas d'écriture | Analyse le besoin, détermine la catégorie (SIMPLE/STANDARD/COMPLEXE), recommande la séquence |
+| Génération header + DCL (Prompt 1) | Génère dans le chat — pas d'écriture | Génère CTL-OPT, header documentaire, DCL-F, DCL-DS dans le chat |
+| Génération logique métier (Prompt 2) | Génère dans le chat — pas d'écriture | Génère les procédures ou sous-routines, templates CRUD dans le chat |
+| Test de compilation (Prompt 2-bis) | **Écriture et exécution autorisées** — après validation de l'équipe | Lance `CRTBNDRPG` via IBM i MCP, rapporte et corrige les erreurs |
+| Création du mode personnalisé (Prompt 3) | Génère dans le chat — pas d'écriture | Génère le fichier `.bob/custom_modes.yaml` du mode "ACME Developer" dans le chat |
+| Plan de génération (Prompt 4) | Génère dans le chat — pas d'écriture | Génère le backlog et le plan du mode dans le chat |
+| Sauvegarde des livrables | **Écriture autorisée** — après validation complète | Écrit les fichiers `.md` dans le workspace |
+
+> 💡 **Règle d'or pour UC 9 :** L'écriture et la compilation sur l'IBM i ne sont autorisées qu'après validation explicite de l'équipe. Pendant toute la phase de génération (Prompts 0 à 4), Bob produit uniquement dans le chat — le mode IBM i Developer le permet, mais l'équipe ne donne pas l'instruction d'écrire.
 
 ### Intégration ARCAD
 
