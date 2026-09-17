@@ -12,7 +12,7 @@
 >
 > **Gain Bob estimé :** ~15× — une application de 10 programmes documentée en 1 journée au lieu de 2 semaines
 >
-> **Mode Bob recommandé :** IBM i Developer (mode Ask)
+> **Mode Bob recommandé :** IBM i Developer (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask.
 
 ---
 
@@ -214,26 +214,22 @@ UC 4 est le **premier UC terrain** — il n'y a pas de fichiers produits par des
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — mode **Ask** |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : **Ask**. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP (lecture membres sources) + IBM i Database MCP (vues QSYS2) |
 | **MCP différés** | Confluence MCP (publication, si token disponible) |
 
-### Pourquoi IBM i Developer — Ask ?
+### Pourquoi le mode IBM i Developer pour la compréhension de code ?
 
-Le mode **IBM i Developer** est un mode personnalisé fourni par le package Premium Bob. Il pré-charge dans chaque conversation un contexte système IBM i : vocabulaire RPG/CL/DDS, connaissance des vues QSYS2, comportements des MCP IBM i. Sans ce mode, il faudrait réexpliquer ces notions dans chaque prompt.
+Le mode **IBM i Developer** apporte la connaissance RPG/CL/DDS spécialisée pour toute la session — vocabulaire des opcodes, connaissance des structures ILE, vues QSYS2, comportements des MCP IBM i. Sans ce mode, ces notions doivent être réexpliquées dans chaque prompt.
 
-Le sous-mode **Ask** signifie que Bob peut **lire** via les MCP mais ne peut pas **écrire** ni **exécuter de commandes** :
+UC 4 est un UC **lecture seule** : Bob analyse le code et produit la documentation dans le chat. La discipline de validation repose sur la **relecture humaine avant sauvegarde** : Bob génère la fiche de compréhension dans le chat, le développeur valide le contenu, puis autorise explicitement l'écriture du fichier `.md` dans le workspace.
 
-| Ce que Bob peut faire en Ask | Ce qu'il ne peut pas faire en Ask |
-|------------------------------|----------------------------------|
-| Lire des membres sources via IBM i MCP | Modifier un membre source |
-| Exécuter des requêtes SQL via IBM i Database MCP | Lancer une commande CL sur l'IBM i |
-| Lire des pages Confluence via Confluence MCP | Écrire un fichier `.md` dans le workspace |
+> 💡 **Sans Premium Package IBM i :** utiliser le mode **Ask** pour toute la session — la discipline de validation reste identique.
 
-> 💡 **Règle d'or pour UC 4 :** IBM i Developer — Ask pour toute la phase d'analyse. Basculer en **Agent** uniquement au moment de sauvegarder les fichiers de compréhension `.md`, puis revenir en Ask immédiatement.
+> 💡 **Règle d'or pour UC 4 :** IBM i Developer pour toute la session. Bob génère la documentation dans le chat — l'expert valide le contenu avant d'autoriser la sauvegarde du fichier `.md`. Aucune écriture IBM i dans cet UC.
 
-> ⚠️ Ne jamais rester en mode **Agent** pendant la phase d'analyse avec le MCP IBM i actif — le risque de modification accidentelle de membres sources existe.
+> ⚠️ Ne jamais autoriser d'écriture sur l'IBM i pendant UC 4 — cet UC est exclusivement lecture et documentation. Si Bob propose une action `write_member`, refuser.
 
 ---
 
