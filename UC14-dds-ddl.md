@@ -173,28 +173,28 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — mode **Ask** pour l'analyse DDS et la génération DDL, **Agent** pour la sauvegarde des scripts |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask pour l'analyse DDS et la génération DDL, Agent pour le test de création et la sauvegarde. |
 | **Scope** | Library List → bibliothèque source ACME (QDDSSRC ou QDDSSRCD) |
 | **MCP actifs** | IBM i MCP (lecture DDS) + IBM i Database MCP (QSYS2 pour validation et métadonnées) |
 | **MCP différés** | Confluence MCP (publication des scripts DDL, si token disponible) |
 
-### Pourquoi IBM i Developer — Ask pour la génération de DDL ?
+### Pourquoi le mode IBM i Developer pour la conversion DDS → DDL ?
 
-En mode **Ask**, Bob génère le DDL dans le chat — l'équipe peut le relire, le corriger, itérer sans risque avant de sauvegarder. En mode **Agent**, Bob écrit directement dans un fichier — si le DDL est incorrect, il faut éditer le fichier sauvegardé plutôt que de simplement corriger dans le chat.
+Le mode **IBM i Developer** pré-charge le contexte IBM i (DDS, SQL Db2 for i, IBM i MCP) dans chaque conversation. Bob génère le DDL dans le chat — l'équipe le relit, le corrige, itère sans risque avant d'autoriser l'écriture ou l'exécution. Un script DDL incorrect exécuté sur l'IBM i peut créer une table avec de mauvais types — difficile à corriger une fois des données chargées.
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification du fichier DDS (Prompt 0) | **Ask** | Compte les champs, détecte les facteurs de complexité, liste les REFLD, recommande la stratégie |
-| Analyse DDS (Prompt 1) | **Ask** | Lit les membres DDS via IBM i MCP, produit l'analyse complète dans le chat |
-| Génération DDL (Prompts 2 et 3) | **Ask** | Génère `CREATE TABLE`, `CREATE INDEX`, `CREATE VIEW` dans le chat |
-| Décisions sur types ambigus | **Ask** | Itération dans le chat jusqu'à validation de l'équipe |
-| Test de création DDL (Prompt 3-bis) | **Agent** | Exécute le `CREATE TABLE` / `CREATE INDEX` sur l'IBM i de test, rapporte les erreurs SQL |
-| Validation post-création (Prompt 5) | **Ask** | Interroge `QSYS2` pour vérifier la structure créée — comparaison avec le DDS source |
-| Sauvegarde du script DDL final | **Agent** | Écrit le fichier `.md` dans le workspace — uniquement une fois le DDL validé |
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Qualification du fichier DDS (Prompt 0) | Génère dans le chat — pas d'écriture | Compte les champs, détecte les facteurs de complexité, liste les REFLD, recommande la stratégie |
+| Analyse DDS (Prompt 1) | Génère dans le chat — pas d'écriture | Lit les membres DDS via IBM i MCP, produit l'analyse complète dans le chat |
+| Génération DDL (Prompts 2 et 3) | Génère dans le chat — pas d'écriture | Génère `CREATE TABLE`, `CREATE INDEX`, `CREATE VIEW` dans le chat |
+| Décisions sur types ambigus | Génère dans le chat — pas d'écriture | Itération dans le chat jusqu'à validation de l'équipe |
+| Test de création DDL (Prompt 3-bis) | Écriture et exécution autorisées — après validation | Exécute le `CREATE TABLE` / `CREATE INDEX` sur l'IBM i de test, rapporte les erreurs SQL |
+| Validation post-création (Prompt 5) | Génère dans le chat — pas d'écriture | Interroge `QSYS2` pour vérifier la structure créée — comparaison avec le DDS source |
+| Sauvegarde du script DDL final | Écriture autorisée — après validation | Écrit le fichier `.md` dans le workspace — uniquement une fois le DDL validé |
 
-> 💡 **Règle d'or pour UC 14 :** Ne passer en mode **Agent** pour la génération DDL qu'une fois le script relu et validé par un développeur. Un script DDL incorrect sauvegardé et exécuté sur l'IBM i peut créer une table avec de mauvais types — difficile à corriger une fois des données chargées.
+> 💡 **Règle d'or pour UC 14 :** Bob génère dans le chat. L'écriture (`write_member`) et l'exécution DDL ne sont autorisées qu'après relecture et validation explicite par un développeur.
 
-> ⚠️ Le mode Agent est autorisé **uniquement** pour deux opérations précises : le test de création DDL via le Prompt 3-bis, et la sauvegarde du script validé. Pendant toute la phase de génération et d'itération (Prompts 0, 1, 2, 3), rester en mode Ask.
+> 💡 **Sans Premium Package IBM i :** utiliser le mode Ask pour l'analyse DDS et la génération DDL (Prompts 0 à 3), puis basculer en mode Agent uniquement pour le test de création DDL (Prompt 3-bis) et la sauvegarde du script validé.
 
 ### Intégration ARCAD
 
