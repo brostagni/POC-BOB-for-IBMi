@@ -190,30 +190,32 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | Mode **Ask** (ou ACME IBM i Review) pour l'analyse et la génération, **Agent** (ou ACME IBM i Execute) uniquement pour la compilation CRTDSPF (sous-cas A) et la sauvegarde. Ne pas présenter Ask/Agent comme des sous-modes d'IBM i Developer — ce sont des modes pairs. |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask pour l'analyse/génération, Agent pour la compilation et la sauvegarde. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP (lecture du display file DDS source pour B/C, écriture et compilation du display file pour A via `CRTDSPF`) |
 | **MCP complémentaires** | IBM i Database MCP (si le composant Web interroge des vues SQL ou des procédures stockées générées en UC 11), Confluence MCP (publication du plan de conversion Prompt 4, si token disponible) |
 
-### Tableau Phase / Mode / Ce que Bob fait
+### Pourquoi le mode IBM i Developer pour la génération d'applications ?
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification (Prompt 0) | **Ask** | Analyse le besoin, détermine le sous-cas (A/B/C), la catégorie, les points d'attention (SUBFILE ?, validations complexes ?), recommande la séquence |
-| Analyse des écrans 5250 (Prompt 1b) | **Ask** | Lit le display file DDS via IBM i MCP, produit le tableau des écrans (RECORD, champs, SUBFILE, validations, indicateurs PF) |
-| Génération DDS display file (Prompt 1a) | **Ask** | Génère les R-specs DDS, les champs avec types et validations, dans le chat |
-| Analyse SUBFILE (Prompt 2b — Passe 1) | **Ask** | Décrit la logique du SUBFILE (chargement, indicateurs de contrôle, touches PF de navigation) |
-| Génération composant SUBFILE (Prompt 2b — Passe 2) | **Ask** | Génère le composant React/Vue/Angular équivalent dans le chat |
-| Génération composant Web par écran (Prompt 3b) | **Ask** | Génère la structure du composant Web (formulaire, champs, validations, mapping PF → boutons) dans le chat |
-| Génération programme RPG (Prompt 2a — sous-cas A) | **Ask** | Génère le programme RPG Free de gestion d'écran dans le chat |
-| Test de compilation CRTDSPF (Prompt 1a-bis) | **Agent** | Lance `CRTDSPF` via IBM i MCP, rapporte les erreurs, propose les corrections |
-| Sauvegarde des livrables | **Agent** | Écrit les fichiers `.md` dans le workspace — uniquement une fois chaque section validée |
+Le mode **IBM i Developer** pré-charge le contexte IBM i (RPG, DDS, CL, IBM i MCP) dans chaque conversation. Bob génère dans le chat — l'équipe relit, valide, puis autorise l'écriture ou la compilation. Écrire ou compiler sans cette validation expose à des modifications du display file source existant sur l'IBM i de test.
 
-> 💡 **Règle d'or pour UC 10 :** Le mode Agent est autorisé **uniquement** pour deux opérations : la compilation via `CRTDSPF` (sous-cas A) et la sauvegarde des livrables validés. Pendant toute la phase d'analyse et de génération, rester en mode Ask.
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Qualification (Prompt 0) | Génère dans le chat — pas d'écriture | Analyse le besoin, détermine le sous-cas (A/B/C), la catégorie, les points d'attention (SUBFILE ?, validations complexes ?), recommande la séquence |
+| Analyse des écrans 5250 (Prompt 1b) | Génère dans le chat — pas d'écriture | Lit le display file DDS via IBM i MCP, produit le tableau des écrans (RECORD, champs, SUBFILE, validations, indicateurs PF) |
+| Génération DDS display file (Prompt 1a) | Génère dans le chat — pas d'écriture | Génère les R-specs DDS, les champs avec types et validations, dans le chat |
+| Analyse SUBFILE (Prompt 2b — Passe 1) | Génère dans le chat — pas d'écriture | Décrit la logique du SUBFILE (chargement, indicateurs de contrôle, touches PF de navigation) |
+| Génération composant SUBFILE (Prompt 2b — Passe 2) | Génère dans le chat — pas d'écriture | Génère le composant React/Vue/Angular équivalent dans le chat |
+| Génération composant Web par écran (Prompt 3b) | Génère dans le chat — pas d'écriture | Génère la structure du composant Web (formulaire, champs, validations, mapping PF → boutons) dans le chat |
+| Génération programme RPG (Prompt 2a — sous-cas A) | Génère dans le chat — pas d'écriture | Génère le programme RPG Free de gestion d'écran dans le chat |
+| Test de compilation CRTDSPF (Prompt 1a-bis) | Écriture et compilation autorisées — après validation | Lance `CRTDSPF` via IBM i MCP, rapporte les erreurs, propose les corrections |
+| Sauvegarde des livrables | Écriture autorisée — après validation | Écrit les fichiers `.md` dans le workspace — uniquement une fois chaque section validée |
 
-> ⚠️ **Pas de Prompt-bis CRTDSPF pour les sous-cas B/C.** Le code Web n'est pas compilé sur IBM i — la validation est fonctionnelle (revue développeur Web + test dans le navigateur). Ne pas utiliser le mode Agent pour "valider" un composant Web.
+> 💡 **Règle d'or pour UC 10 :** Bob génère dans le chat. L'écriture (`write_member`) et la compilation (`CRTDSPF`) ne sont autorisées qu'après validation explicite de l'équipe. Ne jamais autoriser `write_member` pendant l'analyse du display file source — risque de modification de l'existant.
 
-> ⚠️ **Ne jamais rester en mode Agent pendant l'analyse DDS.** Un mode Agent actif pendant l'analyse du display file source peut modifier le membre DDS existant sur l'IBM i de test.
+> ⚠️ **Pas de compilation CRTDSPF pour les sous-cas B/C.** Le code Web n'est pas compilé sur IBM i — la validation est fonctionnelle (revue développeur Web + test dans le navigateur).
+
+> 💡 **Sans Premium Package IBM i :** utiliser le mode Ask pour toute la phase d'analyse et de génération, puis basculer en mode Agent uniquement pour la compilation via `CRTDSPF` (sous-cas A) et la sauvegarde des livrables validés.
 
 ### Intégration ARCAD
 
