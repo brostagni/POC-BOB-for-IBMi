@@ -12,7 +12,7 @@
 >
 > **Gain Bob estimé :** ~20× — dossier documentaire complet produit en 1 journée au lieu de 2 à 4 semaines ; livrable le plus impactant de la Phase 1 pour justifier le ROI du POC
 >
-> **Mode Bob recommandé :** IBM i Developer (mode Ask → Agent pour la sauvegarde)
+> **Mode Bob recommandé :** IBM i Developer (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask.
 
 ---
 
@@ -152,24 +152,28 @@ Ces fichiers sont les inputs directs de chaque prompt UC 6. Les charger dans le 
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — mode **Ask** pour la génération, **Agent** pour la sauvegarde des livrables |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : **Ask**. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP + IBM i Database MCP |
 | **MCP de publication** | Confluence MCP (publication de l'espace documentaire, si token disponible) |
 
-### Pourquoi IBM i Developer — Ask puis Agent ?
+### Pourquoi le mode IBM i Developer pour la documentation complète ?
 
-Le mode **IBM i Developer** pré-charge le contexte IBM i dans chaque conversation. Pour cet UC, deux sous-modes sont utilisés successivement :
+Le mode **IBM i Developer** apporte la connaissance RPG/CL/DDS spécialisée pour toute la session — vocabulaire des opcodes, connaissance des structures ILE, vues QSYS2, comportements des MCP IBM i. Sans ce mode, ces notions doivent être réexpliquées dans chaque prompt de génération documentaire.
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Génération des livrables (Prompts 1 à 5) | **Ask** | Lit les sources et métadonnées via MCP, génère les documents dans le chat — aucune écriture possible |
-| Sauvegarde des fichiers `.md` | **Agent** | Écrit les fichiers de documentation dans le workspace — passer en Agent uniquement pour cette étape |
-| Publication Confluence | **Agent** | Publie via Confluence MCP si token disponible |
+UC 6 est un UC **lecture seule** pendant toute la phase de génération : Bob lit les sources et métadonnées via MCP, puis produit les livrables dans le chat. La discipline de validation repose sur la **relecture humaine avant sauvegarde** : Bob génère chaque livrable dans le chat de façon itérative, l'équipe valide et corrige dans le chat, puis autorise explicitement l'écriture en fin de session.
 
-> 💡 **Règle d'or pour UC 6 :** construire itérativement en Ask (on peut corriger sans risque), sauvegarder en Agent une fois le livrable finalisé. Ne jamais générer et sauvegarder en une seule passe Agent — la phase de construction itérative perdrait sa sécurité.
+> 💡 **Sans Premium Package IBM i :** utiliser le mode **Ask** pour toute la session — la discipline de validation reste identique.
 
-> ⚠️ Ne jamais rester en mode **Agent** pendant la génération des diagrammes Mermaid ou des matrices — en Agent, Bob peut tenter d'écrire des fichiers intermédiaires dans le workspace entre chaque itération.
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Génération des livrables (Prompts 1 à 5) | Génère dans le chat — pas d'écriture | Lit les sources et métadonnées via MCP, génère les documents dans le chat — itérations possibles |
+| Sauvegarde des fichiers `.md` | **Écriture autorisée** — après validation de chaque livrable | Écrit les fichiers de documentation dans le workspace |
+| Publication Confluence | **Écriture MCP autorisée** — après validation du livrable | Publie via Confluence MCP si token disponible |
+
+> 💡 **Règle d'or pour UC 6 :** IBM i Developer pour toute la session. Bob génère chaque livrable dans le chat de façon itérative — l'équipe valide et corrige sans risque d'écriture intermédiaire, puis autorise la sauvegarde une fois le livrable finalisé. Aucune écriture IBM i dans cet UC.
+
+> ⚠️ Ne jamais autoriser d'écriture pendant la génération des diagrammes Mermaid ou des matrices — Bob pourrait écrire des fichiers intermédiaires non validés dans le workspace.
 
 > 💡 Si le Confluence MCP est actif, publier chaque livrable directement dans l'espace POC à l'issue de sa production. La documentation publiée au fil de l'eau est plus utile qu'un export final en fin de phase.
 
