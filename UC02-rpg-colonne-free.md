@@ -12,7 +12,7 @@
 >
 > **Gain Bob estimé :** ~4× — un programme de 400 lignes RPG IV colonné converti en une demi-journée au lieu de 2 jours ; gain plus fort sur les programmes avec indicateurs omniprésents et opcodes obsolètes nombreux (RPG III)
 >
-> **Mode Bob recommandé :** IBM i Developer (mode Ask pour la qualification et la génération du diff, Agent pour la compilation de test et la sauvegarde)
+> **Mode Bob recommandé :** IBM i Developer (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask pour l'analyse/génération, Agent pour la compilation et la sauvegarde.
 
 ---
 
@@ -181,32 +181,34 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — mode **Ask** pour la qualification et la génération du diff, **Agent** pour la compilation de test et la sauvegarde |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : **Ask** pour l'analyse/génération, **Agent** pour la compilation et la sauvegarde. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP (lecture des sources RPG colonné / RPG III, compilation du source converti) |
 | **MCP différés** | IBM i Database MCP (si la conversion concerne des accès aux données — vérification que les fichiers DDS accédés en natif ont des équivalents DDL), Confluence MCP (publication, si token disponible) |
 
-### Pourquoi IBM i Developer — Ask pour la génération du diff de conversion ?
+### Pourquoi le mode IBM i Developer pour la génération du diff de conversion ?
 
-La conversion syntaxique RPG → Free est une opération à fort risque silencieux. En mode Ask, Bob produit le diff complet dans le chat — l'équipe peut valider les équivalences MOVE/MOVEL, les indicateurs convertis, et les P-specs avant de sauvegarder. En mode Agent, Bob modifie directement — une troncature non détectée sur un MOVE à longueurs différentes sera dans le source avant que l'équipe ait pu la voir.
+La conversion syntaxique RPG → Free est une opération à fort risque silencieux. Le mode **IBM i Developer** apporte la connaissance RPG/ILE spécialisée pour toute la session — analyse, génération et compilation. La discipline de travail repose sur **la validation humaine avant toute écriture** : pendant les phases de génération, Bob produit le diff **dans le chat uniquement** ; l'équipe valide les équivalences MOVE/MOVEL, les indicateurs convertis et les P-specs avant d'autoriser explicitement l'écriture sur l'IBM i.
+
+> 💡 **Sans Premium Package IBM i :** remplacer IBM i Developer par le mode **Ask** pour les phases d'analyse et de génération, et le mode **Agent** pour la compilation et la sauvegarde. La discipline de validation reste identique.
 
 > 💡 **Note sur `*INxx` en RPG Free :** les indicateurs `*IN01` à `*IN99` restent syntaxiquement valides en RPG ILE Free — le compilateur les accepte. Leur conversion en variables `IND` nommées est une amélioration de maintenabilité, pas une obligation syntaxique. Ne pas convertir les indicateurs appartenant à une zone INDARA (display file, subfile, printer file) — ils sont liés à la DDS écran et ne peuvent pas être remplacés par des IND locaux sans vérifier la DDS.
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification du programme (Prompt 0) | **Ask** | Détecte le style RPG, identifie le sous-cas (A ou B), compte les opcodes fixes, détecte le cycle et les indicateurs, recommande la stratégie |
-| Inventaire des structures à convertir (Prompt 1) | **Ask** | Lit le source via IBM i MCP, produit le tableau complet des specs et opcodes à convertir, avec les zones à risque |
-| Conversion des specs déclaratives (Prompt 2) | **Ask** | Produit le diff H/F/D-specs → CTL-OPT / DCL-F / DCL-S / DCL-DS dans le chat |
-| Conversion des C-specs et opcodes (Prompt 3) | **Ask** | Produit le diff des C-specs et des opcodes de calcul dans le chat |
-| Test de compilation intermédiaire (Prompt 3-bis) | **Agent** | SIMPLE uniquement — Lance `CRTBNDRPG` via IBM i MCP après Prompt 3. Pour STANDARD/COMPLEXE : ne pas exécuter ici — compiler après Prompt 4 uniquement (Prompt 4-bis) |
-| Nettoyage, indicateurs et interfaces (Prompt 4) | **Ask** | Convertit les indicateurs résiduels, les *ENTRY PLIST, les P-specs RPG IV ; supprime les commentaires de validation ; produit le source final |
-| Test de compilation final (Prompt 4-bis) | **Agent** | Lance `CRTBNDRPG` via IBM i MCP sur le source final |
-| Test fonctionnel | **Humain** | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
-| Sauvegarde du diff validé | **Agent** | Écrit le fichier `.md` dans le workspace — uniquement une fois le diff validé |
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Qualification du programme (Prompt 0) | Génère dans le chat — pas d'écriture | Détecte le style RPG, identifie le sous-cas (A ou B), compte les opcodes fixes, détecte le cycle et les indicateurs, recommande la stratégie |
+| Inventaire des structures à convertir (Prompt 1) | Génère dans le chat — pas d'écriture | Lit le source via IBM i MCP, produit le tableau complet des specs et opcodes à convertir, avec les zones à risque |
+| Conversion des specs déclaratives (Prompt 2) | Génère dans le chat — pas d'écriture | Produit le diff H/F/D-specs → CTL-OPT / DCL-F / DCL-S / DCL-DS dans le chat |
+| Conversion des C-specs et opcodes (Prompt 3) | Génère dans le chat — pas d'écriture | Produit le diff des C-specs et des opcodes de calcul dans le chat |
+| Test de compilation intermédiaire (Prompt 3-bis) | **Écriture et exécution autorisées** — après validation de l'équipe | SIMPLE uniquement — Lance `CRTBNDRPG` via IBM i MCP après Prompt 3. Pour STANDARD/COMPLEXE : ne pas exécuter ici — compiler après Prompt 4 uniquement (Prompt 4-bis) |
+| Nettoyage, indicateurs et interfaces (Prompt 4) | Génère dans le chat — pas d'écriture | Convertit les indicateurs résiduels, les *ENTRY PLIST, les P-specs RPG IV ; supprime les commentaires de validation ; produit le source final |
+| Test de compilation final (Prompt 4-bis) | **Écriture et exécution autorisées** — après validation de l'équipe | Lance `CRTBNDRPG` via IBM i MCP sur le source final |
+| Test fonctionnel | **Humain uniquement** | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
+| Sauvegarde du diff validé | **Écriture autorisée** — après validation du diff complet | Écrit le fichier `.md` dans le workspace |
 
-> 💡 **Règle d'or pour UC 2 :** Le mode Agent est autorisé **uniquement** pour deux opérations précises : le test de compilation via les Prompts 3-bis et 4-bis, et la sauvegarde des livrables validés. Pendant toute la phase de génération et d'itération (Prompts 0 à 4), rester en mode Ask.
+> 💡 **Règle d'or pour UC 2 :** L'écriture et la compilation sur l'IBM i ne sont autorisées qu'après validation explicite de l'équipe. Pendant toute la phase de génération et d'itération (Prompts 0 à 4), Bob produit uniquement dans le chat — le mode IBM i Developer le permet, mais l'équipe ne donne pas l'instruction d'écrire.
 
-> ⚠️ Ne jamais rester en mode Agent pendant la phase de conversion — Bob pourrait écrire un source converti avec des équivalences MOVE/MOVEL non validées, invisibles à la compilation mais régressives à l'exécution.
+> ⚠️ Ne jamais autoriser l'écriture pendant la phase de conversion — une troncature non détectée sur un MOVE à longueurs différentes sera invisible à la compilation mais régressive à l'exécution.
 
 ### Intégration ARCAD
 
