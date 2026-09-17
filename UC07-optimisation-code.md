@@ -12,7 +12,7 @@
 >
 > **Gain Bob estimé :** ~5× — un programme de 500 lignes avec 30 variables à renommer et 5 procédures à extraire traité en une demi-journée au lieu de 2 à 3 jours ; gain plus fort sur les programmes avec nomenclature ancienne non documentée
 >
-> **Mode Bob recommandé :** IBM i Developer (mode Ask pour l'analyse et la génération, Agent pour la compilation de test et la sauvegarde)
+> **Mode Bob recommandé :** IBM i Developer (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask pour l'analyse/génération, Agent pour la compilation et la sauvegarde.
 
 > ⚠️ **UC 7 et UC 8 ne se lancent jamais dans la même session Bob, ni via la même demande en mode Plan.** UC 7 d'abord, compiler et valider fonctionnellement, puis ouvrir une **nouvelle conversation** pour UC 8. Si les deux sont demandés ensemble, Bob mélange les passes de renommage (UC 7) et d'extraction de modules (UC 8) dans un seul diff — les erreurs deviennent intraçables et la compilation produit plusieurs centaines d'erreurs. Voir aussi la règle correspondante dans la fiche UC 8.
 
@@ -172,30 +172,32 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — mode **Ask** pour l'analyse et la génération du diff, **Agent** pour la compilation de test et la sauvegarde |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : **Ask** pour l'analyse/génération, **Agent** pour la compilation et la sauvegarde. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP (lecture des sources RPG, compilation de test) |
 | **MCP différés** | IBM i Database MCP (si optimisations liées à des accès de données), Confluence MCP (publication, si token disponible) |
 
-### Pourquoi IBM i Developer — Ask pour la génération du diff d'optimisation ?
+### Pourquoi le mode IBM i Developer pour la génération du diff d'optimisation ?
 
-Les optimisations de code sont des modifications **précises et réversibles** — chaque renommage, chaque extraction de procédure doit être revue avant d'être appliquée. En mode Ask, Bob produit le diff complet dans le chat : l'équipe peut relire, questionner, corriger une dénomination proposée, et seulement ensuite sauvegarder. En mode Agent, Bob modifie directement — une variable renommée incorrectement sera dans le source avant que l'équipe ait pu la valider.
+Les optimisations de code sont des modifications **précises et réversibles** — chaque renommage, chaque extraction de procédure doit être revue avant d'être appliquée. Le mode **IBM i Developer** apporte la connaissance RPG/ILE spécialisée pour toute la session. La discipline de travail repose sur **la validation humaine avant toute écriture** : Bob produit le diff complet dans le chat, l'équipe relit, questionne, corrige une dénomination proposée, puis autorise explicitement l'écriture sur l'IBM i.
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification du programme (Prompt 0) | **Ask** | Analyse le source, compte les points d'optimisation, détecte les facteurs de complexité, recommande la stratégie |
-| Inventaire des optimisations (Prompt 1) | **Ask** | Lit le source RPG via IBM i MCP, produit le tableau complet des points d'optimisation par catégorie |
-| Renommages (Prompt 2) | **Ask** | Produit le diff des renommages dans le chat — itérations possibles avant validation |
-| Test de compilation après renommages (Prompt 2-bis) | **Agent** | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs — compilation uniquement |
-| Suppression des opcodes obsolètes (Prompt 3) | **Ask** | Produit le diff de remplacement des opcodes dans le chat |
-| Test de compilation après opcodes (Prompt 3-bis) | **Agent** | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs — compilation uniquement |
-| Extraction de procédures (Prompt 4) | **Ask** | Produit la nouvelle structure procédurale dans le chat — itérations possibles |
-| Test fonctionnel | **Humain** | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
-| Sauvegarde du diff validé | **Agent** | Écrit le fichier `.md` dans le workspace — uniquement une fois le diff validé |
+> 💡 **Sans Premium Package IBM i :** remplacer IBM i Developer par le mode **Ask** pour les phases d'analyse et de génération, et le mode **Agent** pour la compilation et la sauvegarde. La discipline de validation reste identique.
 
-> 💡 **Règle d'or pour UC 7 :** Le mode Agent est autorisé **uniquement** pour deux opérations précises : le test de compilation via les Prompts 2-bis et 3-bis, et la sauvegarde du diff validé. Pendant toute la phase de génération et d'itération (Prompts 0 à 4), rester en mode Ask.
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Qualification du programme (Prompt 0) | Génère dans le chat — pas d'écriture | Analyse le source, compte les points d'optimisation, détecte les facteurs de complexité, recommande la stratégie |
+| Inventaire des optimisations (Prompt 1) | Génère dans le chat — pas d'écriture | Lit le source RPG via IBM i MCP, produit le tableau complet des points d'optimisation par catégorie |
+| Renommages (Prompt 2) | Génère dans le chat — pas d'écriture | Produit le diff des renommages dans le chat — itérations possibles avant validation |
+| Test de compilation après renommages (Prompt 2-bis) | **Écriture et exécution autorisées** — après validation de l'équipe | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs |
+| Suppression des opcodes obsolètes (Prompt 3) | Génère dans le chat — pas d'écriture | Produit le diff de remplacement des opcodes dans le chat |
+| Test de compilation après opcodes (Prompt 3-bis) | **Écriture et exécution autorisées** — après validation de l'équipe | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs |
+| Extraction de procédures (Prompt 4) | Génère dans le chat — pas d'écriture | Produit la nouvelle structure procédurale dans le chat — itérations possibles |
+| Test fonctionnel | **Humain uniquement** | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
+| Sauvegarde du diff validé | **Écriture autorisée** — après validation section par section | Écrit le fichier `.md` dans le workspace |
 
-> ⚠️ Ne jamais rester en mode Agent pendant la phase d'analyse — Bob pourrait modifier des sources intermédiaires non validés.
+> 💡 **Règle d'or pour UC 7 :** L'écriture et la compilation sur l'IBM i ne sont autorisées qu'après validation explicite de l'équipe pour chaque section. Pendant toute la phase de génération et d'itération (Prompts 0 à 4), Bob produit uniquement dans le chat — le mode IBM i Developer le permet, mais l'équipe ne donne pas l'instruction d'écrire.
+
+> ⚠️ Ne jamais autoriser l'écriture pendant la phase d'analyse — une variable renommée incorrectement sera dans le source avant que l'équipe ait pu la valider.
 
 ### Intégration ARCAD
 
