@@ -12,7 +12,7 @@
 >
 > **Gain Bob estimé :** ~6× — un programme de 500 lignes avec 20 accès natifs converti en une demi-journée au lieu de 2 à 3 jours ; gain plus fort sur les programmes avec logique de navigation complexe (SETLL/READE en boucle)
 >
-> **Mode Bob recommandé :** IBM i Developer (mode Ask pour l'analyse et la génération, Agent pour la sauvegarde)
+> **Mode Bob recommandé :** IBM i Developer (analyse du code RPG) + IBM i Database (génération SQL Db2 for i) — deux modes du Premium Package IBM i. Sans Premium Package : Ask pour l'analyse/génération, Agent pour la compilation et la sauvegarde.
 
 ---
 
@@ -162,27 +162,35 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — mode **Ask** pour l'analyse et la génération SQL, **Agent** pour la sauvegarde |
+| **Mode Bob** | **IBM i Developer** pour l'analyse du code RPG (Prompts 0-1), **IBM i Database** pour la génération SQL et la compilation (Prompts 2-3 et 2-bis). Sans Premium Package : **Ask** pour l'analyse/génération, **Agent** pour la compilation et la sauvegarde. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP (lecture sources RPG) + IBM i Database MCP (validation SQL, QSYS2) |
 | **MCP différés** | Confluence MCP (publication des sources convertis, si token disponible) |
 
-### Pourquoi IBM i Developer — Ask pour la génération SQL embarqué ?
+### Pourquoi deux modes IBM i pour UC 3 ?
 
-La conversion d'accès natifs en SQL embarqué est un travail **itératif** : la première version générée par Bob est rarement parfaite — des cas limites, des indicateurs de statut manquants, ou des curseurs mal fermés nécessitent des corrections dans le chat avant de sauvegarder. Le mode Ask permet ces itérations sans risque d'écriture intermédiaire.
+UC 3 est l'unique use case du POC qui mobilise les **deux modes IBM i Premium** sur une même session :
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification du programme (Prompt 0) | **Ask** | Compte les opcodes, détecte les facteurs de complexité, recommande la stratégie |
-| Inventaire des accès natifs (Prompt 1) | **Ask** | Lit le source RPG via IBM i MCP, produit le tableau détaillé des opcodes |
-| Génération SQL embarqué (Prompts 2, 3) | **Ask** | Génère le source converti dans le chat — itérations possibles |
-| Test de compilation (Prompt 2-bis) | **Agent** | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs — compilation uniquement |
-| Test fonctionnel | **Humain** | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
-| Sauvegarde du source converti | **Agent** | Écrit le fichier `.md` (diff ou source complet) dans le workspace |
+- **IBM i Developer** est spécialisé sur le code source RPG/CL/DDS. Il lit et comprend les opcodes d'accès natifs (CHAIN, READ, SETLL/READE, WRITE, UPDATE, DELETE) dans leur contexte RPG — structure des D-specs, cycle, indicateurs. C'est le mode adapté pour l'analyse du programme source et l'inventaire des accès à convertir.
 
-> 💡 **Règle d'or pour UC 3 :** Ne passer en mode **Agent** pour la génération SQL qu'une fois la conversion relue et validée par le développeur. Un source RPG sauvegardé avec un `SQLCODE` non testé peut compiler sans erreur mais produire un comportement silencieusement incorrect en production.
+- **IBM i Database** est spécialisé sur SQL Db2 for i. Il connaît les curseurs embarqués (`DECLARE CURSOR`, `OPEN`, `FETCH`, `CLOSE`), la gestion des `SQLCODE` et `SQLSTATE`, les directives de précompilation (`EXEC SQL`), et les patterns de performance Db2 for i (`FOR FETCH ONLY`, `OPTIMIZE FOR n ROWS`). C'est le mode adapté pour générer et itérer le SQL embarqué.
 
-> ⚠️ Le mode Agent est autorisé **uniquement** pour deux opérations précises : le test de compilation via le Prompt 2-bis, et la sauvegarde du source validé. Pendant toute la phase de génération et d'itération SQL (Prompts 0, 1, 2, 3), rester en mode Ask.
+La discipline de travail repose sur **la validation humaine avant toute écriture** : pendant toutes les phases de génération, Bob produit dans le chat uniquement ; le développeur valide avant d'autoriser l'écriture sur l'IBM i.
+
+> 💡 **Sans Premium Package IBM i :** utiliser le mode **Ask** pour l'analyse (Prompts 0-1) et la génération SQL (Prompts 2-3), et le mode **Agent** pour la compilation et la sauvegarde. La discipline de validation reste identique.
+
+| Phase | Mode recommandé | Comportement attendu | Ce que Bob fait |
+|-------|-----------------|----------------------|----------------|
+| Qualification du programme (Prompt 0) | **IBM i Developer** | Génère dans le chat — pas d'écriture | Compte les opcodes, détecte les facteurs de complexité, recommande la stratégie |
+| Inventaire des accès natifs (Prompt 1) | **IBM i Developer** | Génère dans le chat — pas d'écriture | Lit le source RPG via IBM i MCP, produit le tableau détaillé des opcodes |
+| Génération SQL embarqué (Prompts 2, 3) | **IBM i Database** | Génère dans le chat — pas d'écriture | Génère le source converti dans le chat — itérations possibles |
+| Test de compilation (Prompt 2-bis) | **IBM i Database** | **Écriture et exécution autorisées** — après validation du développeur | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs |
+| Test fonctionnel | **Humain uniquement** | — | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
+| Sauvegarde du source converti | **IBM i Database** | **Écriture autorisée** — après validation complète | Écrit le fichier `.md` (diff ou source complet) dans le workspace |
+
+> 💡 **Règle d'or pour UC 3 :** L'écriture et la compilation ne sont autorisées qu'après validation explicite du développeur. Un source RPG avec un `SQLCODE` non testé peut compiler sans erreur mais produire un comportement silencieusement incorrect en production.
+
+> ⚠️ Ne jamais autoriser l'écriture pendant la phase de génération et d'itération SQL (Prompts 0 à 3) — les curseurs mal fermés et les `SQLCODE` non gérés ne sont pas détectés à la compilation.
 
 ### Intégration ARCAD
 
