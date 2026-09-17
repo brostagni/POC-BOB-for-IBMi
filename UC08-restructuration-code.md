@@ -12,7 +12,7 @@
 >
 > **Gain Bob estimé :** ~5× — un programme de 800 lignes décomposé en 4 modules traité en une journée au lieu d'une semaine ; gain plus fort sur les programmes avec logique dupliquée entre plusieurs sources (Bob peut identifier et consolider)
 >
-> **Mode Bob recommandé :** IBM i Developer (mode Ask pour l'analyse et la conception, Agent pour la compilation de test et la sauvegarde)
+> **Mode Bob recommandé :** IBM i Developer (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask pour l'analyse/génération, Agent pour la compilation et la sauvegarde.
 
 > ⚠️ **UC 8 ne se lance jamais dans la même session Bob qu'UC 7, ni via la même demande en mode Plan.** UC 7 doit être terminé, compilé sans erreur et validé fonctionnellement avant d'ouvrir une **nouvelle conversation** pour UC 8. Demander à Bob de "faire UC 7 et UC 8" en une seule passe mélange les renommages de variables et l'extraction de modules dans un même diff — les erreurs deviennent intraçables et la compilation produit plusieurs centaines d'erreurs sur un programme de 1000 lignes. Voir aussi la règle correspondante dans la fiche UC 7.
 
@@ -184,30 +184,32 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — mode **Ask** pour l'analyse, la conception et la génération, **Agent** pour la compilation de test et la sauvegarde |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : **Ask** pour l'analyse/génération, **Agent** pour la compilation et la sauvegarde. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP (lecture des sources RPG, écriture des nouveaux modules, compilation de test) |
 | **MCP différés** | IBM i Database MCP (si restructuration implique des accès de données à vérifier), Confluence MCP (publication, si token disponible) |
 
-### Pourquoi IBM i Developer — Ask pour la conception et la génération ?
+### Pourquoi le mode IBM i Developer pour la conception et la génération ?
 
-UC 8 est l'UC où le risque de dégradation silencieuse est le plus élevé. En mode Ask, Bob produit le plan d'architecture et chaque module dans le chat — l'équipe peut valider chaque étape avant de sauvegarder. Un module extrait incorrectement en mode Agent crée un source erroné sur l'IBM i avant que l'équipe ait pu le relire.
+UC 8 est l'UC où le risque de dégradation silencieuse est le plus élevé. Le mode **IBM i Developer** apporte la connaissance RPG/ILE spécialisée pour toute la session. La discipline de travail repose sur **la validation humaine avant toute écriture** : Bob produit le plan d'architecture et chaque module dans le chat — l'équipe valide chaque étape avant d'autoriser explicitement l'écriture sur l'IBM i.
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification du programme (Prompt 0) | **Ask** | Analyse le source, identifie les responsabilités, détecte le niveau de couplage, recommande la stratégie et les limites du périmètre POC |
-| Plan d'architecture (Prompt 1) | **Ask** | Produit le plan de découpe complet — modules, interfaces, ordre d'extraction — dans le chat pour validation avant toute génération de code |
-| Génération des nouveaux modules (Prompt 2) | **Ask** | Génère chaque module extrait dans le chat — itérations possibles sur les interfaces et le contenu |
-| Test de compilation des modules (Prompt 3-bis) | **Agent** | Lance `CRTBNDRPG` / `CRTRPGMOD` via IBM i MCP, rapporte les erreurs — compilation uniquement |
-| Modification du programme principal (Prompt 3) | **Ask** | Génère le programme principal modifié (appels `CALLP`, interfaces adaptées) dans le chat |
-| Test de compilation du programme principal (Prompt 3-bis) | **Agent** | Lance `CRTBNDRPG` via IBM i MCP après modification du programme principal |
-| Nettoyage et interfaces (Prompt 4) | **Ask** | Produit les prototypes, vérifie la cohérence des interfaces, génère le programme de service (si applicable) |
-| Test fonctionnel | **Humain** | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
-| Sauvegarde des livrables validés | **Agent** | Écrit les fichiers `.md` dans le workspace — uniquement une fois chaque livrable validé |
+> 💡 **Sans Premium Package IBM i :** remplacer IBM i Developer par le mode **Ask** pour les phases d'analyse et de génération, et le mode **Agent** pour la compilation et la sauvegarde. La discipline de validation reste identique.
 
-> 💡 **Règle d'or pour UC 8 :** Le mode Agent est autorisé **uniquement** pour deux opérations précises : le test de compilation via le Prompt 3-bis, et la sauvegarde des livrables validés. Pendant toute la phase d'analyse, de conception et de génération (Prompts 0 à 4), rester en mode Ask.
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Qualification du programme (Prompt 0) | Génère dans le chat — pas d'écriture | Analyse le source, identifie les responsabilités, détecte le niveau de couplage, recommande la stratégie et les limites du périmètre POC |
+| Plan d'architecture (Prompt 1) | Génère dans le chat — pas d'écriture | Produit le plan de découpe complet — modules, interfaces, ordre d'extraction — dans le chat pour validation avant toute génération de code |
+| Génération des nouveaux modules (Prompt 2) | Génère dans le chat — pas d'écriture | Génère chaque module extrait dans le chat — itérations possibles sur les interfaces et le contenu |
+| Test de compilation des modules (Prompt 3-bis) | **Écriture et exécution autorisées** — après validation de l'équipe | Lance `CRTBNDRPG` / `CRTRPGMOD` via IBM i MCP, rapporte les erreurs |
+| Modification du programme principal (Prompt 3) | Génère dans le chat — pas d'écriture | Génère le programme principal modifié (appels `CALLP`, interfaces adaptées) dans le chat |
+| Test de compilation du programme principal (Prompt 3-bis) | **Écriture et exécution autorisées** — après validation de l'équipe | Lance `CRTBNDRPG` via IBM i MCP après modification du programme principal |
+| Nettoyage et interfaces (Prompt 4) | Génère dans le chat — pas d'écriture | Produit les prototypes, vérifie la cohérence des interfaces, génère le programme de service (si applicable) |
+| Test fonctionnel | **Humain uniquement** | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
+| Sauvegarde des livrables validés | **Écriture autorisée** — après validation de chaque livrable | Écrit les fichiers `.md` dans le workspace |
 
-> ⚠️ Ne jamais rester en mode Agent pendant la phase de conception du plan d'architecture — une erreur dans le Prompt 1 se propage dans tous les modules générés ensuite.
+> 💡 **Règle d'or pour UC 8 :** L'écriture et la compilation sur l'IBM i ne sont autorisées qu'après validation explicite de l'équipe. Pendant toute la phase d'analyse, de conception et de génération (Prompts 0 à 4), Bob produit uniquement dans le chat — le mode IBM i Developer le permet, mais l'équipe ne donne pas l'instruction d'écrire.
+
+> ⚠️ Ne jamais autoriser l'écriture pendant la phase de conception du plan d'architecture — une erreur dans le Prompt 1 se propage dans tous les modules générés ensuite.
 
 ### Intégration ARCAD
 
@@ -224,7 +226,7 @@ Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (
 
 > 💡 **Dans les deux cas :** au début de chaque session UC 8, vérifier dans ARCAD la liste des programmes du périmètre et leur statut. Créer un checkpoint sur les membres à modifier avant de démarrer.
 
-> ⚠️ **Écriture dans le fichier ARCAD ouvert — pas dans QSYS directement.** Quand le programme est ouvert depuis une version ARCAD (via Code for IBM i → Object Browser → clic droit → Open in Editor), toutes les écritures de Bob (programme principal modifié, nouveaux modules extraits) doivent cibler les membres dans la **bibliothèque source ARCAD ouverte**, pas un chemin `QSYS` absolu. Si Bob affiche un WARNING et propose un chemin `QSYS`, interrompre et préciser : *"Écris dans [NOM_LIB]/QRPGSRC([NOM_PROGRAMME]) — ne pas écrire dans QSYS directement."* Le mode **Ask** pendant la génération empêche ce cas : Bob produit le code dans le chat, et c'est l'équipe qui valide avant tout `write_member`.
+> ⚠️ **Écriture dans le fichier ARCAD ouvert — pas dans QSYS directement.** Quand le programme est ouvert depuis une version ARCAD (via Code for IBM i → Object Browser → clic droit → Open in Editor), toutes les écritures de Bob (programme principal modifié, nouveaux modules extraits) doivent cibler les membres dans la **bibliothèque source ARCAD ouverte**, pas un chemin `QSYS` absolu. Si Bob affiche un WARNING et propose un chemin `QSYS`, interrompre et préciser : *"Écris dans [NOM_LIB]/QRPGSRC([NOM_PROGRAMME]) — ne pas écrire dans QSYS directement."* La validation dans le chat avant tout `write_member` est le rempart contre ce cas.
 
 ---
 
