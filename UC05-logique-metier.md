@@ -12,7 +12,7 @@
 >
 > **Gain Bob estimé :** ~8× — les règles métier d'un domaine formalisées en une demi-journée au lieu d'une semaine d'ateliers
 >
-> **Mode Bob recommandé :** IBM i Developer (mode Ask)
+> **Mode Bob recommandé :** IBM i Developer (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask.
 
 ---
 
@@ -134,22 +134,26 @@ Ces fichiers produits par UC 4 doivent être chargés **avant de démarrer** si 
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — mode **Ask** |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : **Ask**. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP + IBM i Database MCP |
 | **MCP différés** | Confluence MCP (publication du catalogue de règles, si token disponible) |
 
-### Pourquoi IBM i Developer — Ask ?
+### Pourquoi le mode IBM i Developer pour l'extraction de logique métier ?
 
-Le mode **IBM i Developer** pré-charge le contexte IBM i dans la conversation (vocabulaire RPG/CL, vues QSYS2, comportements MCP) — ce qui évite de devoir l'expliquer dans chaque prompt d'extraction de règles. Le sous-mode **Ask** garantit la lecture seule : Bob interroge les sources et les tables de paramétrage via les MCP sans pouvoir modifier quoi que ce soit.
+Le mode **IBM i Developer** apporte la connaissance RPG/CL/DDS spécialisée pour toute la session — vocabulaire des opcodes, connaissance des structures ILE, vues QSYS2, comportements des MCP IBM i. Sans ce mode, ces notions doivent être réexpliquées dans chaque prompt d'extraction de règles.
+
+UC 5 est un UC **lecture seule** : Bob analyse le code et les tables de paramétrage, puis produit le catalogue de règles dans le chat. La discipline de validation repose sur la **relecture humaine avant sauvegarde** : Bob génère le catalogue dans le chat, l'expert métier valide les règles extraites, puis autorise explicitement l'écriture du fichier `.md` dans le workspace.
 
 Le MCP IBM i Database est particulièrement utile dans cet UC pour **deux usages distincts** :
 - Interroger les tables de paramétrage référencées dans les règles (taux, codes, seuils) — les valeurs réelles s'affichent dans le chat
 - Vérifier l'existence et la structure des fichiers physiques cités dans le code (via `QSYS2.SYSCOLUMNS`)
 
-> 💡 **Règle d'or pour UC 5 :** IBM i Developer — Ask pour toute la phase d'extraction. Basculer en **Agent** uniquement au moment de sauvegarder le catalogue de règles `.md`.
+> 💡 **Sans Premium Package IBM i :** utiliser le mode **Ask** pour toute la session — la discipline de validation reste identique.
 
-> ⚠️ Ne jamais rester en mode **Agent** pendant la phase d'extraction avec le MCP IBM i actif — risque de modification accidentelle de membres sources.
+> 💡 **Règle d'or pour UC 5 :** IBM i Developer pour toute la session. Bob génère le catalogue de règles dans le chat — l'expert métier valide les règles avant d'autoriser la sauvegarde du fichier `.md`. Aucune écriture IBM i dans cet UC.
+
+> ⚠️ Ne jamais autoriser d'écriture sur l'IBM i pendant UC 5 — cet UC est exclusivement lecture et extraction. Si Bob propose une action `write_member`, refuser.
 
 ---
 
