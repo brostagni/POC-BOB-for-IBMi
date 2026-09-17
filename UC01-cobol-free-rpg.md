@@ -12,7 +12,7 @@
 >
 > **Gain Bob estimé :** ~5× — un programme COBOL de 600 lignes converti en une journée au lieu d'une semaine ; gain plus fort sur les programmes avec des WORKING-STORAGE denses et des COMPUTE/MOVE répétitifs (Bob génère les équivalences mécaniques rapidement)
 >
-> **Mode Bob recommandé :** IBM i Developer (mode Ask pour la qualification et la génération du diff, Agent pour la compilation de test et la sauvegarde)
+> **Mode Bob recommandé :** IBM i Developer (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : Ask pour l'analyse/génération, Agent pour la compilation et la sauvegarde.
 
 ---
 
@@ -167,30 +167,32 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 
 | Élément | Valeur |
 |---------|--------|
-| **Mode Bob** | IBM i Developer — mode **Ask** pour la qualification et la génération du diff, **Agent** pour la compilation de test et la sauvegarde |
+| **Mode Bob** | **IBM i Developer** (Premium Package IBM i) — mode unique pour toute la session. Sans Premium Package : **Ask** pour l'analyse/génération, **Agent** pour la compilation et la sauvegarde. |
 | **Scope** | Library List → bibliothèque applicative ACME |
 | **MCP actifs** | IBM i MCP (lecture du source COBOL depuis `QCBLSRC`, écriture et compilation du source RPG dans `QRPGSRC`) |
 | **MCP différés** | IBM i Database MCP (si des accès SQL embarqués COBOL sont présents — `EXEC SQL` en COBOL → embedded SQL en RPG), Confluence MCP (publication, si token disponible) |
 
-### Pourquoi IBM i Developer — Ask pour la génération du diff de conversion ?
+### Pourquoi le mode IBM i Developer pour la génération du diff de conversion ?
 
-UC 1 est la conversion à risque le plus élevé du POC. En mode Ask, Bob produit l'analyse et chaque section du diff dans le chat — l'expert peut valider chaque décision de transposition (REDEFINES, niveau 88, PERFORM THRU) avant de sauvegarder. En mode Agent, Bob écrit directement un source RPG potentiellement incorrect sur des zones sémantiquement critiques.
+UC 1 est la conversion à risque le plus élevé du POC. Le mode **IBM i Developer** apporte la connaissance RPG/COBOL/CL spécialisée pour toute la session — analyse, génération et compilation. La discipline de travail repose sur **la validation humaine avant toute écriture**, pas sur un changement de mode : pendant les phases d'analyse et de génération, Bob produit le code **dans le chat uniquement** ; l'expert valide chaque décision avant d'autoriser explicitement l'écriture sur l'IBM i.
 
-| Phase | Mode | Ce que Bob fait |
-|-------|------|----------------|
-| Qualification du programme (Prompt 0) | **Ask** | Analyse les 4 divisions COBOL, identifie les constructs sans équivalent RPG, délimite le périmètre POC, recommande la stratégie |
-| Inventaire des structures à transposer (Prompt 1) | **Ask** | Lit le source COBOL via IBM i MCP, produit le tableau complet des structures WORKING-STORAGE, paragraphes PROCEDURE DIVISION et zones à décision |
-| Transposition des structures de données (Prompt 2) | **Ask** | Génère les équivalences DATA DIVISION → DCL-S / DCL-DS / DCL-F dans le chat |
-| Transposition de la PROCEDURE DIVISION (Prompt 3) | **Ask** | Génère les équivalences paragraphes → sous-routines / procédures RPG dans le chat |
-| Test de compilation (Prompt 3-bis) | **Agent** | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs |
-| Interfaces et constructs spéciaux (Prompt 4) | **Ask** | Transpose les niveaux 88, les CALL vers d'autres programmes, les REDEFINES complexes |
-| Test de compilation final (Prompt 4-bis) | **Agent** | Lance `CRTBNDRPG` sur le source final |
-| Test fonctionnel | **Humain** | Exécution sur IBM i de test, comparaison avec le programme COBOL d'origine — non délégable à Bob |
-| Sauvegarde du diff validé | **Agent** | Écrit le fichier `.md` dans le workspace — uniquement une fois chaque section validée par l'expert |
+> 💡 **Sans Premium Package IBM i :** remplacer IBM i Developer par le mode **Ask** pour les phases d'analyse et de génération, et le mode **Agent** pour la compilation et la sauvegarde. La discipline de validation reste identique.
 
-> 💡 **Règle d'or pour UC 1 :** Le mode Agent est autorisé **uniquement** pour deux opérations précises : le test de compilation via les Prompts 3-bis et 4-bis, et la sauvegarde des livrables validés. Pendant toute la phase d'analyse et de génération (Prompts 0 à 4), rester en mode Ask.
+| Phase | Comportement attendu | Ce que Bob fait |
+|-------|----------------------|----------------|
+| Qualification du programme (Prompt 0) | Génère dans le chat — pas d'écriture | Analyse les 4 divisions COBOL, identifie les constructs sans équivalent RPG, délimite le périmètre POC, recommande la stratégie |
+| Inventaire des structures à transposer (Prompt 1) | Génère dans le chat — pas d'écriture | Lit le source COBOL via IBM i MCP, produit le tableau complet des structures WORKING-STORAGE, paragraphes PROCEDURE DIVISION et zones à décision |
+| Transposition des structures de données (Prompt 2) | Génère dans le chat — pas d'écriture | Génère les équivalences DATA DIVISION → DCL-S / DCL-DS / DCL-F dans le chat |
+| Transposition de la PROCEDURE DIVISION (Prompt 3) | Génère dans le chat — pas d'écriture | Génère les équivalences paragraphes → sous-routines / procédures RPG dans le chat |
+| Test de compilation (Prompt 3-bis) | **Écriture et exécution autorisées** — après validation de l'expert | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs |
+| Interfaces et constructs spéciaux (Prompt 4) | Génère dans le chat — pas d'écriture | Transpose les niveaux 88, les CALL vers d'autres programmes, les REDEFINES complexes |
+| Test de compilation final (Prompt 4-bis) | **Écriture et exécution autorisées** — après validation de l'expert | Lance `CRTBNDRPG` sur le source final |
+| Test fonctionnel | **Humain uniquement** | Exécution sur IBM i de test, comparaison avec le programme COBOL d'origine — non délégable à Bob |
+| Sauvegarde du diff validé | **Écriture autorisée** — après validation section par section | Écrit le fichier `.md` dans le workspace |
 
-> ⚠️ Ne jamais rester en mode Agent pendant la transposition des structures de données — un REDEFINES mal transposé en DCL-DS avec OVERLAY incorrect produit un accès mémoire silencieusement erroné qui ne sera pas détecté à la compilation.
+> 💡 **Règle d'or pour UC 1 :** L'écriture et la compilation sur l'IBM i ne sont autorisées qu'après validation explicite de l'expert pour chaque section. Pendant toute la phase d'analyse et de génération (Prompts 0 à 4), Bob produit uniquement dans le chat — le mode IBM i Developer le permet, mais l'expert ne donne pas l'instruction d'écrire.
+
+> ⚠️ Ne jamais autoriser l'écriture pendant la transposition des structures de données — un REDEFINES mal transposé en DCL-DS avec OVERLAY incorrect produit un accès mémoire silencieusement erroné qui ne sera pas détecté à la compilation.
 
 ### Intégration ARCAD
 
