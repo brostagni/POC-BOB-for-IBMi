@@ -341,6 +341,40 @@ Signale clairement ce que tu ne peux pas déterminer sans le source.
 
 ---
 
+### Prompt 3-bis — Inventaire des programmes obsolètes (non recompilés depuis N ans)
+
+> **Complément au Prompt 3** — ne nécessite pas l'absence de source. Utilisable sur toute bibliothèque applicative.
+
+```
+Dans la bibliothèque [NOM_LIB], identifie les programmes qui n'ont pas été recompilés
+depuis [N] ans (à partir de la date d'aujourd'hui).
+
+Utilise QSYS2.OBJECT_STATISTICS avec les filtres suivants :
+- OBJECT_LIBRARY = '[NOM_LIB]'
+- OBJECT_TYPE = '*PGM'
+- OBJCREATED < CURRENT_DATE - [N] YEARS
+
+Pour chaque programme identifié, produis un tableau avec :
+| Nom du programme | Date de création (OBJCREATED) | Langage (PROGRAM_TYPE) | Âge estimé (années) |
+
+Trier par OBJCREATED ascendant (les plus anciens en premier).
+Signaler le nombre total de programmes dans la bibliothèque et le pourcentage considéré obsolète.
+Ne pas conclure sur la pertinence de moderniser sans information métier supplémentaire.
+```
+
+**Pourquoi ce prompt est utile :**
+
+- **Inventaire de modernisation rapide** — un IBM i de production héberge souvent des programmes compilés dans les années 80-90 qui n'ont jamais été retouchés. Ce prompt produit en 30 secondes un backlog priorisé pour UC 7/8/2.
+- `QSYS2.OBJECT_STATISTICS` → vue la plus fiable sur les attributs des objets IBM i. `OBJCREATED` correspond à la date de compilation (ou de dernière recompilation) — pas à la date de création du source.
+- `OBJECT_TYPE = '*PGM'` → restreint aux programmes compilés. Pour inclure les modules ILE, ajouter `OR OBJECT_TYPE = '*MODULE'`.
+- `Signaler le nombre total et le pourcentage` → donne un ratio d'obsolescence immédiatement exploitable en réunion de bilan.
+
+> 💡 **Variante** : remplacer `[N] ans` par une date fixe (ex. `OBJCREATED < DATE('2010-01-01')`) pour caler l'inventaire sur une date de référence connue (migration système, passage à OS400 V7, etc.).
+
+> ⚠️ **Piège** : `OBJCREATED` est la date de **recompilation**, pas la date d'écriture du source. Un programme peut avoir été recompilé en 2015 avec un source des années 90 — il n'apparaîtra pas dans cet inventaire. Croiser avec `LAST_USED_TIMESTAMP` pour détecter les programmes qui n'ont jamais été utilisés récemment.
+
+---
+
 ### Prompt 4 — Résumé exécutif pour le management
 
 ```
@@ -436,6 +470,46 @@ UC 4 se pratique en **conversation continue**, pas en prompts isolés. Une fois 
 | Demander à Bob de "décompiler" un programme sans source | Bob peut générer un source fictif plausible mais faux | Utiliser le Prompt 3 (analyse via QSYS2) pour les programmes sans source |
 | Travailler en mode Code ou Agent pour cet UC | Risque de modification accidentelle de sources | Rester en mode **Ask** pour tout UC de lecture/compréhension |
 | Confondre fichiers logiques et fichiers physiques dans l'analyse | L'analyse des dépendances est faussée — un fichier logique n'est pas une table | Demander explicitement la distinction PF/LF dans les prompts d'analyse |
+
+---
+
+## Accélérateur Premium Package — Workflow "Business Rules Extraction"
+
+Le Premium Package for i propose un workflow Bob dédié à l'extraction des règles métier :
+
+> **Workflow : "Business Rules Extraction"**
+> Disponible depuis le bouton `Start Workflow` en haut du panneau Chat Bob, en mode **Agent** ou **IBM i Developer**.
+
+Ce workflow guide Bob à travers des étapes structurées pour analyser un membre QSYS et produire automatiquement un rapport de règles métier au format markdown, sauvegardé dans l'IFS. Il est plus reproductible qu'un prompt libre car il garantit la couverture des mêmes points sur chaque programme.
+
+**Quand l'utiliser :** en complément du Prompt 1 (compréhension programme), sur les programmes avec une logique métier dense (calculs, validations, branchements conditionnels importants). Le workflow produit un fichier `business-rules-{NOM_PROGRAMME}-{date}.md` directement utilisable comme input de UC 5 (logique métier) et UC 6 (documentation).
+
+**Configuration type :**
+- `LIBRARY` : la bibliothèque QSYS contenant le source (ex. `APPVTE`)
+- `SOURCE FILE` : fichier source (ex. `QRPGLESRC`, `QRPGSRC`)
+- `MEMBER` : nom du membre à analyser (ex. `GESCMD`)
+
+> 💡 Le workflow "Business Rules Extraction" est **complémentaire** aux prompts UC 4 — il ne remplace pas le Prompt 1 (compréhension structurelle) mais approfondit l'extraction des règles métier sur les programmes le justifiant. Sur les programmes simples, le Prompt 1 suffit.
+
+---
+
+## Référence complémentaire — Labs IBM
+
+Ce UC est documenté et mis en pratique dans deux labs officiels IBM :
+
+> **Lab 101 — Document SAMCO with Bob (Steps 1 à 4)**
+> https://github.com/bmarolleau/IBM-i-Application-Modernization-with-Bob/blob/main/lab101-premium-discover-samco.md
+
+Ce lab illustre UC 4 sur l'application SAMCO : exploration de la bibliothèque QSYS avec `search_qsys`, documentation programme-level avec `read_member`, génération de documentation fonctionnelle multi-programmes, et utilisation du workflow "Business Rules Extraction" (Step 4). Il montre concrètement la progression d'une analyse simple (Step 2 — programme seul) à une analyse transversale (Step 3 — fonction métier complète).
+
+**Différence de contexte :** le lab utilise `SAMSRCn` (bibliothèque de démonstration). Pour ACME, remplacer les noms de bibliothèques et de membres par les équivalents QSYS de l'application cible — la logique de prompt est identique.
+
+> **Lab FLIGHT400 — Exercise 1 & Exercise 5 (Code Explanation + System Queries)**
+> https://github.com/bmarolleau/flight400-demo
+
+L'Exercise 1 illustre UC 4 en deux temps : exploration de l'Object Browser et DDS Previewer (1a), puis génération d'une architecture overview avec diagramme Mermaid et ERD (1b — switch en IBM i Database mode pour la commande `/erd`). L'Exercise 5 montre l'usage des requêtes système en langage naturel, dont le Prompt 3-bis ("programmes non recompilés depuis N ans" via `QSYS2.OBJECT_STATISTICS`).
+
+**Différence de contexte :** le lab utilise la bibliothèque `FLGHT4nn`. Pour ACME, remplacer les noms de bibliothèques par les équivalents QSYS de l'application cible — la logique des prompts est identique.
 
 ---
 

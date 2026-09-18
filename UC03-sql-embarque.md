@@ -113,7 +113,18 @@ Si la décision est de convertir sans restructurer : **Séquence : Prompt 0 → 
 
 Chaque session de travail sur un programme RPG doit démarrer dans une **nouvelle conversation Bob** (bouton `+` en haut du panneau Chat). Ne pas réutiliser une conversation UC 14 ou d'un programme précédent — le contexte de conversion d'un autre programme bruite les réponses sur le programme courant.
 
-**Mode à sélectionner :** `IBM i Developer`
+**Modes à sélectionner selon la phase :**
+
+UC 3 se déroule en **deux phases qui utilisent des modes différents** :
+
+| Phase | Mode | Raison |
+|---|---|---|
+| **Analyse RPG** — lecture du source, inventaire des opcodes d'accès (Prompts 0 et 1) | `IBM i Developer` | Accès au code RPG, `read_member`, compréhension de la logique de navigation |
+| **Génération SQL** — remplacement des opcodes par `EXEC SQL`, curseurs, optimisation (Prompts 2, 3, 4) | `IBM i Database` | Active automatiquement 15+ skills Db2 : `db2-sql-primer`, `db2-sql-optimization`, `db2-index-strategy`, `rpg-embedded-sql` — recommandations d'index, validation de syntaxe SQL, jointures optimisées |
+
+**Quand basculer :** après le Prompt 1 (inventaire complet des accès natifs validé), fermer la phase d'analyse et démarrer une nouvelle conversation en mode `IBM i Database` avec le contexte de l'inventaire.
+
+> 💡 Le mode `IBM i Database` produit des requêtes SQL plus précises car il interroge le catalogue Db2 for i (`QSYS2.SYSTABLES`, `SYSCOLUMNS`) pour valider les noms de colonnes et les types réels — pas seulement ce que Bob infère du code RPG.
 
 ### 2. Ouvrir les fichiers sources dans l'éditeur (Open in Editor)
 
@@ -192,19 +203,34 @@ La discipline de travail repose sur **la validation humaine avant toute écritur
 
 > ⚠️ Ne jamais autoriser l'écriture pendant la phase de génération et d'itération SQL (Prompts 0 à 3) — les curseurs mal fermés et les `SQLCODE` non gérés ne sont pas détectés à la compilation.
 
-### Intégration ARCAD
+> 💡 **Sans Premium Package IBM i :** utiliser le mode **Ask** pour l'analyse (Prompts 0-1) et la génération SQL (Prompts 2-3), et le mode **Agent** pour la compilation et la sauvegarde. La discipline de validation reste identique.
 
-Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
+| Phase | Mode recommandé | Comportement attendu | Ce que Bob fait |
+|-------|-----------------|----------------------|----------------|
+| Qualification du programme (Prompt 0) | **IBM i Developer** | Génère dans le chat — pas d'écriture | Compte les opcodes, détecte les facteurs de complexité, recommande la stratégie |
+| Inventaire des accès natifs (Prompt 1) | **IBM i Developer** | Génère dans le chat — pas d'écriture | Lit le source RPG via IBM i MCP, produit le tableau détaillé des opcodes |
+| Génération SQL embarqué (Prompts 2, 3) | **IBM i Database** | Génère dans le chat — pas d'écriture | Génère le source converti dans le chat — itérations possibles |
+| Test de compilation (Prompt 2-bis) | **IBM i Database** | **Écriture et exécution autorisées** — après validation du développeur | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs |
+| Test fonctionnel | **Humain uniquement** | — | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
+| Sauvegarde du source converti | **IBM i Database** | **Écriture autorisée** — après validation complète | Écrit le fichier `.md` (diff ou source complet) dans le workspace |
 
-**Impact sur UC 3 : faible à moyen.** Les sources RPG modifiés par Bob devront être réintégrés dans ARCAD après validation.
+> 💡 **Règle d'or pour UC 3 :** L'écriture et la compilation ne sont autorisées qu'après validation explicite du développeur. Un source RPG avec un `SQLCODE` non testé peut compiler sans erreur mais produire un comportement silencieusement incorrect en production.
 
-| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
-|--------------------------------------|---------------------------|
-| Lire manuellement l'historique des versions du source RPG dans ARCAD | Le MCP ARCAD peut exposer l'historique directement dans le contexte Bob |
-| Réintégration manuelle dans ARCAD après chaque session | L'analyse et la génération SQL embarqué sont fonctionnelles dans les deux cas |
-| Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans chaque source converti | Le placeholder n'est plus nécessaire — la réintégration est pilotée par Bob |
+> ⚠️ Ne jamais autoriser l'écriture pendant la phase de génération et d'itération SQL (Prompts 0 à 3) — les curseurs mal fermés et les `SQLCODE` non gérés ne sont pas détectés à la compilation.
 
-> 💡 **Dans les deux cas :** définir un workflow de réintégration ARCAD — par exemple, nommer les membres sources convertis avec un suffixe `_SQL` dans une bibliothèque de travail, puis les promouvoir dans ARCAD depuis cette bibliothèque après validation.
+### Spécificité ARCAD — MCP non disponible
+
+Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
+
+**Impact sur UC 3 : faible à moyen.** Les sources RPG modifiés par Bob devront être réintégrés dans ARCAD manuellement après validation.
+
+| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
+|--------------------------------------|------------------------------|
+| Impossible de lire l'historique des versions du source RPG dans ARCAD | IBM i MCP lit la version courante du source dans les bibliothèques ARCAD normalement |
+| Les sources convertis ne sont pas automatiquement versionnés dans ARCAD | L'analyse et la génération SQL embarqué sont intégralement fonctionnelles |
+| Réintégration manuelle dans ARCAD après chaque session de conversion | Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête de chaque fichier de source converti |
+
+> 💡 **Contournement :** définir dès le début de la session un workflow de réintégration ARCAD — par exemple, nommer les membres sources convertis avec un suffixe `_SQL` dans une bibliothèque de travail, puis les promouvoir dans ARCAD depuis cette bibliothèque après validation.
 
 ---
 
@@ -772,6 +798,24 @@ EXEC SQL ROLLBACK ;
 **À faire avant production :** ajouter un Prompt 3-ter dédié à la détection et conversion des blocs transactionnels. Points à couvrir : identification des séquences multi-fichiers sans commit explicite, choix du niveau d'isolation (`*NONE` / `*CS` / `*ALL`), pattern `COMMIT` / `ROLLBACK` + `SQLCODE`, interaction avec les journaux IBM i existants.
 
 > ⚠️ **Signal d'alerte sur le terrain :** si le Prompt 0 détecte la combinaison `WRITE + UPDATE` sur des fichiers différents dans la même subroutine, ou la présence d'un opcode `ROLBK` / `COMMIT` dans le source natif — traiter ce programme comme un candidat à la gestion transactionnelle avant de démarrer la conversion.
+
+---
+
+## Référence complémentaire — Lab IBM
+
+Ce UC est documenté et mis en pratique dans deux labs officiels IBM :
+
+> **Lab 104 — Convert RLA to SQL and Optimize**
+> https://github.com/bmarolleau/IBM-i-Application-Modernization-with-Bob/blob/main/lab104-premium-rla-to-sql.md
+
+Ce lab illustre UC 3 sur l'application SAMCO : remplacement d'un `CHAIN` + appel de procédure par un `LEFT JOIN` en `EXEC SQL`, stratégie d'index avec le skill `db2-index-strategy`, création d'une vue SQL de synthèse. Il montre concrètement comment le mode **IBM i Database** auto-charge les skills Db2 et comment la commande `/erd` génère l'ERD à partir du catalogue avant d'écrire les premières requêtes.
+
+> **Lab 103 — DDS to SQL Impact Analysis** (prérequis de UC 3)
+> https://github.com/bmarolleau/IBM-i-Application-Modernization-with-Bob/blob/main/lab103-premium-dds-to-sql-workflow.md
+
+Ce lab couvre UC 14 (prérequis de UC 3) et montre la commande `QSYS2.GENERATE_SQL` ainsi que l'enrichissement DDL avec contraintes `DEFAULT` et `CHECK` — directement réutilisable pour préparer les tables cibles avant de commencer UC 3.
+
+**Différence de contexte :** SAMCO utilise un workspace Git. Pour ACME (QSYS), remplacer les accès IFS par `read_member` et les chemins locaux par les coordonnées QSYS (`[NOM_LIB]/QRPGLESRC/[NOM_PROGRAMME]`).
 
 ---
 

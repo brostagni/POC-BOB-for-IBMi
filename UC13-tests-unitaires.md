@@ -209,17 +209,19 @@ Le mode **IBM i Developer** pré-charge le contexte IBM i (RPG, CL, IBM i MCP, R
 
 > 💡 **Sans Premium Package IBM i :** utiliser le mode Ask pour les Prompts 0-3 et la génération P5, puis basculer en mode Agent uniquement pour le Prompt 1-bis (compilation), le Prompt 4 (exécution), l'exécution batch P5 et la sauvegarde.
 
-### Intégration ARCAD
+> 💡 **Sans Premium Package IBM i :** utiliser le mode Ask pour les Prompts 0-3 et la génération P5, puis basculer en mode Agent uniquement pour le Prompt 1-bis (compilation), le Prompt 4 (exécution), l'exécution batch P5 et la sauvegarde.
 
-Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
+### Spécificité ARCAD — MCP non disponible
+
+ACME utilise **ARCAD** pour la gestion du code source et les déploiements IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
 
 **Impact sur UC 13 : limité.** Les tests RPGUnit s'exécutent directement sur l'IBM i de test via IBM i MCP, indépendamment d'ARCAD.
 
-| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible | Remarque |
-|--------------------------------------|---------------------------|----------|
-| Réintégrer manuellement les sources de test dans ARCAD après chaque session | Le MCP ARCAD peut enregistrer les sources de test dans ARCAD directement | Même workflow UC 7-8 |
-| Inclure manuellement le **manifest de traçabilité** dans chaque rapport | Le MCP ARCAD peut alimenter automatiquement la traçabilité version/test | Le fichier `*-diff-restr-*.md` fournit le delta couvert dans les deux cas |
-| Déclencher manuellement un pipeline ARCAD post-test | Le MCP ARCAD peut déclencher le pipeline depuis Bob | L'intégration pipeline complète est l'objet de UC 16 |
+| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même | Contournement |
+|---------------------------------------|------------------------------|---------------|
+| Les sources de test ne sont pas automatiquement enregistrés dans ARCAD | IBM i MCP (Agent) crée les membres dans `QTESTSRC` et exécute RPGUnit indépendamment | Réintégrer manuellement les sources de test dans ARCAD après chaque session (même workflow UC 7-8) |
+| Impossible de prouver quelle version exacte du programme a été testée | Le fichier `*-diff-restr-*.md` ou `*-rpg-converti-*.md` fournit le delta des modifications couvertes | Inclure dans chaque rapport le **manifest de traçabilité** ci-dessous |
+| Impossible de déclencher un pipeline ARCAD post-test depuis Bob | Bob exécute les tests via IBM i MCP | N/A — l'intégration pipeline est l'objet de UC 16 |
 
 **Manifest de traçabilité obligatoire dans chaque `*-rapport-test-*.md` :**
 
@@ -835,6 +837,111 @@ UC 13 se pratique idéalement en **conversation continue** pour les programmes S
 | Accepter un résultat PASSED sans vérifier la couverture | Un test qui passe avec 2 cas de test ne prouve pas la non-régression si le programme a 20 cas | Toujours confronter le rapport (Prompt 4) au plan de tests (Prompt 3) — vérifier la couverture |
 | Oublier le TEARDOWN / hook après chaque test | Les données de test s'accumulent dans la bibliothèque de test et faussent les exécutions suivantes | Toujours inclure un hook après chaque test avec la stratégie confirmée en P0 (ROLLBACK TO SAVEPOINT ou DELETE par clé de corrélation) |
 | Corréler le spool par LIKE ou par position sans JOB_NAME qualifié | IBM i MCP lit le spool d'une exécution précédente ou d'un autre utilisateur — le rapport analysé est incorrect | Mémoriser le JOB_NAME qualifié avant l'exécution (étape A du Prompt 4 / section 2 du Prompt 5) et l'utiliser comme clé exacte — ne pas utiliser DLTSPLF pour masquer le problème |
+
+---
+
+## Accélérateurs Premium Package — Workflows RPGUnit (approche recommandée)
+
+Le Premium Package for i propose deux workflows Bob dédiés à la génération et l'implémentation de tests RPGUnit. **Ces workflows sont la voie recommandée** pour les sessions UC 13 — ils structurent le travail en étapes guidées et réduisent la surface d'erreur par rapport aux prompts manuels.
+
+### Séquence des deux workflows
+
+```
+Workflow 1 : RPGUnit Test Plan Creation
+→ Workflow 2 : RPGUnit Test Suite Implementation
+```
+
+Ces deux workflows fonctionnent en séquence. Le premier produit les artefacts de plan (documents markdown), le second les consomme pour générer et exécuter les tests.
+
+### Workflow 1 — "RPGUnit Test Plan Creation"
+
+> Disponible depuis le bouton `Start Workflow` (icône en haut du panneau Chat Bob), en mode **IBM i Developer**.
+
+**Ce que fait ce workflow :**
+1. Identifie les objectifs de test et collecte le code source
+2. Valide l'environnement (RPGUnit installé, bibliothèque de test accessible, `QDEVTOOLS` dans la Library List)
+3. Localise automatiquement les membres testables dans la bibliothèque — présente les candidats
+4. Génère les artefacts de plan dans le répertoire IFS spécifié : Templates, Modules, Test Suites, Test Utilities
+
+**Paramètres demandés :**
+
+| Paramètre | Valeur typique | Note |
+|-----------|---------------|------|
+| Library | `[NOM_LIB]` | Bibliothèque applicative — ex. `APPVTE` |
+| IFS project directory | `/home/[USER]/[nom-projet]/` | Répertoire unique par projet/utilisateur |
+| Mode | Create new test plan | Sur la première session — "update" si reprise |
+| Goal | Default recommended path | Laisser Bob choisir sauf si besoin spécifique |
+| Source discovery | Automatic | Bob localise les membres `.SQLRPGLE`, `.RPGLE` testables |
+| Validate environment | Yes | Installer RPGUnit et QDEVTOOLS si manquant |
+
+> 💡 Si Bob demande d'installer **RPGUnit** pendant ce workflow : cliquer **Install** puis ajouter `RPGUNIT` à la User Library List. Faire de même pour **QDEVTOOLS** si demandé.
+
+> 💡 Si Bob propose de relancer le workflow "RPGUnit Test Plan Creation" à nouveau en milieu de session : répondre **No thanks** — le plan existe déjà.
+
+**Ce que produit ce workflow :** des fichiers markdown dans le répertoire IFS (`Templates`, `Modules`, `Test Suites`, `Test Utilities`) qui constituent le plan de tests structuré, prêt pour le Workflow 2.
+
+**Quand préférer les prompts manuels :** si le programme à tester n'est pas localisé automatiquement, si la procédure exportée est dans un `*SRVPGM` non détecté, ou si le plan nécessite des cas de test très spécifiques non couverts par le mode automatique.
+
+---
+
+### Workflow 2 — "RPGUnit Test Suite Implementation"
+
+> Disponible depuis le bouton `Start Workflow`, en mode **IBM i Developer**.
+
+**Ce que fait ce workflow :**
+1. Localise les artefacts de plan produits par le Workflow 1
+2. Valide l'environnement de test IBM i (même vérification que Workflow 1)
+3. Génère le code RPGUnit complet (membre source, assertions, hooks setup/teardown)
+4. Exécute les suites de test et itère jusqu'à ce que les tests passent ou qu'une erreur soit identifiée dans le source
+
+**Paramètres demandés :**
+
+| Paramètre | Valeur typique | Note |
+|-----------|---------------|------|
+| Library | `[NOM_LIB]` | Même bibliothèque qu'au Workflow 1 |
+| IFS project directory | `/home/[USER]/[nom-projet]/` | Même répertoire qu'au Workflow 1 |
+| Test suites path | *(pré-rempli par Bob)* | Bob lit le plan produit au Workflow 1 |
+| Validate environment | Yes | |
+
+> ⚠️ Si Bob propose de télécharger à nouveau RPGUnit et qu'une popup demande si supprimer la version existante : cliquer **Cancel** sur cette popup. Ne pas supprimer la version existante — Bob continue avec l'installation déjà en place.
+
+**Ce que produit ce workflow :** membres source de test dans la bibliothèque de test, exécution des suites, rapport de résultats.
+
+---
+
+### Séquence complète recommandée avec les workflows PPi
+
+```
+1. Prompt 0 (qualification — identifier les procédures exportées et l'interface RPGUnit)
+2. Workflow 1 : RPGUnit Test Plan Creation
+3. Valider le plan produit (relire les artefacts markdown dans le répertoire IFS)
+4. Workflow 2 : RPGUnit Test Suite Implementation
+5. Prompt 4 (si exécution manuelle souhaitée) ou laisser le Workflow 2 exécuter directement
+```
+
+> 💡 Les workflows PPi **remplacent** les Prompts 1 (génération code test), 2 (SQL), et 3 (plan périmètre) dans cette séquence. Le Prompt 0 (qualification) et le Prompt 4 (analyse du rapport) restent pertinents en complément.
+
+> 💡 Les prompts manuels (Prompts 1 à 5) restent la référence pour les ajustements fins post-génération, les cas non couverts par les workflows, ou les environnements sans Premium Package.
+
+---
+
+## Référence complémentaire — Labs IBM
+
+Ce UC est documenté et mis en pratique dans deux labs officiels IBM :
+
+> **Lab 106 — Generate RPGUnit Tests for SAMCO**
+> https://github.com/bmarolleau/IBM-i-Application-Modernization-with-Bob/blob/main/lab106-premium-test-rpgunit.md
+
+Ce lab illustre UC 13 sur l'application SAMCO : génération de stubs de test avec `generate_rpg_unit_test_stub`, remplissage des assertions pour `GetArtDesc`, `GetArtRefSalPrice`, `ExistArt`, exécution avec code coverage `*LINE`. La Part 2 du lab montre l'utilisation complète des deux workflows PPi "Create RPGUnit Test Plan" et "Implement RPGUnit Test Plan".
+
+**Différence de contexte :** le lab utilise des procédures exportées de `ART300` depuis QSYS. Pour ACME, remplacer les noms de programmes et bibliothèques par les équivalents QSYS de l'application cible — la logique de génération de tests est identique.
+
+> **Lab FLIGHT400 — Exercise 6 (RPGUnit Test Planning & Implementation)**
+> https://github.com/bmarolleau/flight400-demo
+
+L'Exercise 6 illustre la séquence complète décrite dans la section "Accélérateurs Premium Package" ci-dessus : création du membre source `CUSTCHK.SQLRPGLE`, installation de RPGUnit + QDEVTOOLS, exécution du Workflow 1 ("RPGUnit Test Plan Creation") avec ses paramètres exacts (library, IFS directory, mode, goal, source discovery, validate environment), puis du Workflow 2 ("RPGUnit Test Suite Implementation") avec la gestion des popups d'installation. C'est le lab de référence le plus complet pour la séquence workflow-first.
+
+**Différence de contexte :** le lab teste la procédure `checkCustomerExists` dans `CUSTCHK` depuis `FLGHT4nn`. Pour ACME, remplacer le membre source, la bibliothèque et le répertoire IFS par les équivalents de l'application cible.
 
 ---
 

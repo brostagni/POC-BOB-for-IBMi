@@ -177,21 +177,21 @@ UC 6 est un UC **lecture seule** pendant toute la phase de génération : Bob li
 
 > 💡 Si le Confluence MCP est actif, publier chaque livrable directement dans l'espace POC à l'issue de sa production. La documentation publiée au fil de l'eau est plus utile qu'un export final en fin de phase.
 
-### Intégration ARCAD
+### Spécificité ARCAD — MCP non disponible
 
-Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
+ACME utilise **ARCAD** pour la gestion du code source et les déploiements IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
 
 **Impact sur les UC 4, 5 et 6 : limité.** ARCAD gère les versions et les déploiements — pas la compréhension du code. Les sources sont accessibles via IBM i MCP indépendamment d'ARCAD.
 
-| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
-|--------------------------------------|---------------------------|
-| Lire manuellement l'historique des versions ARCAD | Le MCP ARCAD peut exposer l'historique directement dans le contexte Bob |
-| Exporter manuellement l'historique ARCAD (CSV/texte) et le charger dans Bob | L'historique est intégrable automatiquement dans la spec technique (Prompt 3) |
-| Ajouter le placeholder `⚠️ Historique ARCAD — à compléter manuellement depuis l'interface ARCAD` | Le placeholder n'est plus nécessaire |
+| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
+|--------------------------------------|------------------------------|
+| Impossible de lire l'historique des versions ARCAD directement dans Bob | IBM i MCP lit les sources courants dans les bibliothèques ARCAD normalement |
+| Impossible d'interroger les environnements de déploiement ARCAD | L'analyse du code et la génération de documentation sont intégralement fonctionnelles |
+| La section "Historique des modifications" de la spec technique (Prompt 3) ne peut pas être alimentée automatiquement | Ajouter le placeholder `⚠️ Historique ARCAD — à compléter manuellement depuis l'interface ARCAD` dans les livrables concernés |
 
-> 💡 **Dans les deux cas :** IBM i MCP lit les sources courants dans les bibliothèques ARCAD normalement. L'analyse du code et la génération de documentation sont intégralement fonctionnelles.
+> 💡 **Contournement pour la spec technique :** exporter depuis ARCAD la liste des objets managés et leur historique de modifications (export CSV ou texte), charger ce fichier dans le contexte Bob, puis demander à Bob de l'intégrer dans la spec technique. Ce n'est pas automatique mais reste exploitable.
 
-> 💡 **Pour UC 16 (DevOps/CI-CD avec ARCAD) :** UC 16 tire pleinement parti du MCP ARCAD — Bob peut piloter les pipelines directement si le MCP est disponible. Voir la note UC 16 dans le plan.
+> ⚠️ **Pour UC 16 (DevOps/CI-CD avec ARCAD) :** l'absence du MCP ARCAD a un impact majeur — Bob ne pourra pas piloter les pipelines ARCAD directement. La fiche UC 16 traitera cette contrainte en détail.
 
 ---
 
@@ -263,6 +263,24 @@ Signaler explicitement les zones où le périmètre est incomplet ou incertain.
 - `Ne pas inventer de composants non visibles dans les fichiers de compréhension` → garde-fou anti-hallucination de niveau architecture. Une relation inventée dans un diagramme d'architecture propage une fausse information dans toute la documentation suivante.
 
 > ⚠️ **Piège évité :** sans la contrainte sur le nombre de nœuds, Bob génère des diagrammes Mermaid qui dépassent la capacité du rendu et produisent une erreur dans le preview. Toujours limiter à 15 nœuds, quitte à faire un second diagramme pour les composants secondaires.
+
+#### Complément — Commande `/erd` pour le diagramme de données
+
+En plus du diagramme de composants (Mermaid `graph TD`), le Premium Package for i propose la commande slash `/erd` pour générer un **diagramme Entité-Relation (ERD)** directement depuis le catalogue Db2 for i :
+
+```
+/erd [NOM_LIB]
+```
+
+**Ce que fait `/erd` :** interroge `QSYS2.SYSTABLES`, `QSYS2.SYSCOLUMNS2` et `QSYS2.SYSCST` pour lister toutes les tables de la bibliothèque, leurs colonnes, et les contraintes de clé étrangère définies. Génère un diagramme Mermaid `erDiagram` structuré sur les données réelles du catalogue — pas sur les inférences du code source.
+
+**Quand l'utiliser :** en préambule du Prompt 3 (spec technique + modèle ER). L'ERD `/erd` donne la vue base de données réelle de la bibliothèque, qui sert de socle au modèle ER de la spec technique.
+
+> ⚠️ **Mode obligatoire pour `/erd` : IBM i Database** (pas IBM i Developer). La commande `/erd` accède au catalogue Db2 for i via le MCP IBM i Database — elle n'est disponible que lorsque ce mode est actif. Procédure : terminer le Prompt 1 en **IBM i Developer**, puis switcher en **IBM i Database** avant de taper `/erd [NOM_LIB]`. Revenir en IBM i Developer pour les prompts suivants si des sources RPG doivent être analysés.
+
+> ⚠️ **Limite avec les fichiers DDS :** les fichiers physiques DDS (PF) n'ont pas de contraintes de clé étrangère dans le catalogue SQL — `/erd` montrera les tables mais sans relations FK formelles. Les relations doivent être ajoutées manuellement depuis les fichiers de compréhension (UC 4 a identifié les accès par clé). Cette limite disparaît après conversion UC 14 (DDS → DDL avec contraintes SQL explicites).
+
+> 💡 **Modes disponibles pour `/erd` :** IBM i Developer ou IBM i Database — la commande n'est pas disponible en mode Ask. Préférer **IBM i Database** pour des résultats optimaux : le mode a accès direct au MCP Database et interroge le catalogue de façon plus fiable.
 
 ---
 
@@ -624,6 +642,28 @@ Avant de passer aux UC de la Phase 2 — UC 14 (voir `UC14-dds-ddl.md`) puis UC 
 - [ ] La fiche de synthèse (Prompt 5) a été produite et relue par le chef de projet POC
 - [ ] Tous les livrables sont sauvegardés dans le workspace avec la convention de nommage `{appArcad}-{fonction}-{composant}-{type}-{YYYYMMDD-HHmm}.md` ET publiés sur Confluence (si MCP disponible)
 - [ ] La mention `à valider par l'équipe ACME` est présente sur les documents non encore revus formellement
+
+---
+
+## Référence complémentaire — Labs IBM
+
+Ce UC est documenté et mis en pratique dans deux labs officiels IBM :
+
+> **Lab 101 — Document SAMCO with Bob (Steps 1 à 5)**
+> https://github.com/bmarolleau/IBM-i-Application-Modernization-with-Bob/blob/main/lab101-premium-discover-samco.md
+
+Le Step 5 de ce lab montre concrètement l'utilisation de la commande `/erd [NOM_LIB]` pour générer un ERD complet de l'application SAMCO à partir du catalogue `QSYS2`, puis la génération d'un document d'architecture complet avec diagrammes Mermaid de type flux, hiérarchie de menus et architecture système. C'est le point de référence le plus opérationnel pour le Prompt 1 de ce UC.
+
+Les Steps 2 et 3 illustrent la progression documentation programme → documentation fonctionnelle transversale — directement applicable à la séquence UC 4 → UC 6.
+
+**Différence de contexte :** le lab utilise `SAMSRCn` (bibliothèque de démonstration). Pour ACME, remplacer les noms de bibliothèques par les équivalents QSYS de l'application cible — la logique de prompt est identique.
+
+> **Lab FLIGHT400 — Exercise 1b (Architecture Docs + ERD)**
+> https://github.com/bmarolleau/flight400-demo
+
+L'Exercise 1b illustre la séquence complète UC 6 / Prompt 1 : génération de l'architecture overview en IBM i Developer mode (diagramme Mermaid + flux de traitement), puis switch en **IBM i Database mode** pour la commande `/erd FLGHT4nn`. Ce lab montre concrètement pourquoi le changement de mode est nécessaire pour l'ERD et ce que produit la commande sur une application réelle.
+
+**Différence de contexte :** le lab utilise `FLGHT4nn`. Pour ACME, remplacer les noms de bibliothèques par les équivalents QSYS de l'application cible.
 
 ---
 

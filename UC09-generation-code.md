@@ -158,19 +158,21 @@ Le mode **IBM i Developer** apporte la connaissance RPG/ILE spécialisée pour t
 
 > 💡 **Règle d'or pour UC 9 :** L'écriture et la compilation sur l'IBM i ne sont autorisées qu'après validation explicite de l'équipe. Pendant toute la phase de génération (Prompts 0 à 4), Bob produit uniquement dans le chat — le mode IBM i Developer le permet, mais l'équipe ne donne pas l'instruction d'écrire.
 
-### Intégration ARCAD
+> 💡 **Règle d'or pour UC 9 :** L'écriture et la compilation sur l'IBM i ne sont autorisées qu'après validation explicite de l'équipe. Pendant toute la phase de génération (Prompts 0 à 4), Bob produit uniquement dans le chat — le mode IBM i Developer le permet, mais l'équipe ne donne pas l'instruction d'écrire.
 
-Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
+### Spécificité ARCAD — MCP non disponible
 
-**Impact sur UC 9 : faible.** Les programmes générés sont de nouveaux membres sources (`QRPGSRC`) qui n'existent pas encore dans ARCAD. Ces nouveaux membres devront être enregistrés dans ARCAD après validation.
+ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
 
-| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
-|--------------------------------------|---------------------------|
-| Créer manuellement le nouveau membre dans ARCAD après la génération | IBM i MCP + MCP ARCAD peuvent créer le membre et l'enregistrer dans ARCAD directement |
-| Vérifier manuellement dans ARCAD qu'aucun programme de même nom n'est en cours de modification | Le MCP ARCAD peut vérifier les conflits de nommage directement depuis Bob |
-| Réintégration manuelle — ajouter `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans chaque source | Le placeholder n'est plus nécessaire — les programmes sont intégrés automatiquement dans ARCAD |
+**Impact sur UC 9 : faible.** Les programmes générés sont de nouveaux membres sources (`QRPGSRC`) qui n'existent pas encore dans ARCAD. Ces nouveaux membres devront être enregistrés manuellement dans ARCAD après validation.
 
-> 💡 **Dans les deux cas :** avant de générer un programme, vérifier dans ARCAD qu'aucun membre de même nom n'est en cours de modification. Documenter le nom dans le fichier `*-plan-generation-*.md`.
+| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
+|--------------------------------------|------------------------------|
+| Impossible de créer automatiquement le nouveau membre dans ARCAD lors de la génération | IBM i MCP peut créer le membre directement dans les bibliothèques source — ARCAD le verra lors de la synchro manuelle |
+| Impossible de vérifier si un programme de même nom est déjà géré dans ARCAD | Vérification manuelle dans l'interface ARCAD avant de nommer le programme cible |
+| Les programmes générés ne sont pas automatiquement intégrés dans les packages de déploiement ARCAD | Réintégration manuelle — ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête de chaque source généré |
+
+> 💡 **Contournement :** avant de générer un programme, vérifier dans ARCAD qu'aucun membre de même nom n'est en cours de modification. Documenter le nom du programme généré dans le fichier `*-plan-generation-*.md` pour faciliter la réintégration ARCAD post-validation.
 
 ---
 
@@ -178,6 +180,7 @@ Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (
 
 > 💡 **Atelier Bob Industrialisation**
 > Les prompts récurrents (Prompt 0, génération header, génération logique) peuvent être disponibles sous forme de **commandes slash personnalisées** dans le mode "ACME Developer" une fois celui-ci créé.
+> Voir la fiche `atelier-bob-industrialisation-prompts.md` pour la liste complète des commandes disponibles.
 
 ### Prompt 0 — Qualification du programme à générer
 
@@ -529,6 +532,44 @@ Ne pas inventer de programmes ou de structures non visibles dans les sources dis
 
 ---
 
+## Cas avancé — Ajout d'un champ end-to-end (feature cross-couches)
+
+Ce pattern correspond à l'ajout d'un nouveau champ qui traverse toutes les couches d'une application IBM i existante : base de données (PF DDS), fichier logique (LF DDS), display file (DSPF), et programme RPG. C'est un cas d'usage fréquent en maintenance évolutive — différent de la génération d'un programme nouveau.
+
+> ⚠️ **Ce cas est une extension de UC 9 + UC 14 combinés.** Il ne s'agit pas de créer un programme nouveau (UC 9 standard) ni de convertir un DDS existant (UC 14 standard) — il s'agit de **propager une modification** cohérente à travers plusieurs objets liés. Démarrer par un scope explicite : lister les 4 objets impactés avant toute génération.
+
+**Séquence recommandée :**
+
+| Étape | Objet | Opération | Risque principal |
+|-------|-------|-----------|-----------------|
+| 1 | Fichier physique (PF DDS) | Ajouter le champ avec son type, longueur, `COLHDG` | Attention à ne pas modifier les clés (`K`) ni les champs existants |
+| 2 | Fichier logique (LF DDS) | Ajouter l'alias `RENAME` du nouveau champ | La ligne `K [CLE]` doit rester intacte |
+| 3 | Display file (DSPF) | Ajouter le champ screen avec position, label, `CHECK(RZ)`, **pas de `COLHDG`** | Vérifier la position — chevauchement avec un champ existant = erreur de compilation |
+| 4 | Programme RPG OPM/ILE | Propager le champ dans les specs I (input), C (calcul) et O (output) | Voir piège O-specs OPM ci-dessous |
+| 5 | Compilation + validation | Dans l'ordre : PF → LF → DSPF → RPG | Un échec à une étape bloque les suivantes — s'arrêter et corriger |
+
+**Prompts à utiliser :**
+
+```
+Je dois ajouter le champ [NOM_CHAMP] (type [TYPE], longueur [LG]) à travers les couches
+suivantes de l'application [NOM_LIB] :
+1. Fichier physique (PF) : [NOM_PF] dans [NOM_LIB]/QDDSSRCF
+2. Fichier logique (LF) : [NOM_LF] dans [NOM_LIB]/QDDSSRCF
+3. Display file (DSPF) : [NOM_DSPF] dans [NOM_LIB]/QDDSSRCD
+4. Programme RPG : [NOM_RPG] dans [NOM_LIB]/QRPGSRC
+
+Commence par lister pour chaque objet les lignes à modifier ou ajouter (diff uniquement),
+sans générer de code complet. Attends ma validation avant de démarrer les modifications.
+Pour chaque objet, procède séparément — montrer le diff, attendre l'approbation, puis sauvegarder
+le membre uniquement (sans compiler). Compilation uniquement à l'étape 5, dans l'ordre donné.
+```
+
+> ⚠️ **Piège O-specs OPM RPG (alignement colonne critique) :** dans un programme RPG OPM (format colonné), les O-specs (spécifications de sortie) sont **sensibles à l'alignement de colonne**. La position de fin de champ est une valeur décimale positionnée exactement dans les colonnes 40-43. Si Bob génère la ligne en estimant l'espacement visuellement plutôt qu'en copiant le modèle exact d'une ligne voisine (ex. la ligne du champ `FMILES`), il peut positionner `234` à la place de `233` — ce qui provoque une erreur de compilation silencieuse ou un accès au mauvais champ. **Instruction à inclure dans le prompt :** *"Pour les O-specs, copie l'alignement exact de la ligne voisine et change uniquement le nom du champ et la valeur de fin — ne recalcule pas les colonnes à partir de zéro."*
+
+> 💡 **Stratégie 3 diffs pour les O-specs :** sur un programme OPM RPG dense, scinder la modification en 3 diffs successifs (1. F-specs + I-specs, 2. C-specs, 3. O-specs) plutôt qu'un seul diff global. Chaque diff est plus petit, plus facile à valider, et une erreur d'alignement est immédiatement localisée.
+
+---
+
 ## Pièges à éviter
 
 | Piège | Ce qui se passe | Comment l'éviter |
@@ -539,6 +580,7 @@ Ne pas inventer de programmes ou de structures non visibles dans les sources dis
 | Ne pas tester la compilation avant de sauvegarder | Des erreurs de syntaxe ou de type découvertes après sauvegarde nécessitent une reprise du diff — perte de temps | Le Prompt 2-bis est obligatoire avant toute sauvegarde du source final |
 | Distribuer le mode personnalisé sans le valider | Un mode avec des conventions incorrectes génère du mauvais code pour toute l'équipe — plus difficile à corriger | Valider le mode "ACME Developer" sur au moins 2 programmes représentatifs avant de le distribuer (Prompt 3) |
 | Travailler en mode Agent pendant la génération | Bob peut sauvegarder un source intermédiaire non validé dans QRPGSRC, ou écraser un source existant | Rester en mode **Ask** pendant Prompts 0 à 4 — mode Agent uniquement pour Prompt 2-bis (compilation) et sauvegarde finale |
+| Modifier plusieurs couches en un seul diff sur un programme OPM colonné | Un diff global mélange I-specs, C-specs et O-specs — si une erreur d'alignement est dans les O-specs, elle est masquée par les erreurs des specs précédentes | Utiliser 3 diffs successifs (F/I, C, O) sur les programmes OPM colonné — voir section "Cas avancé cross-couches" |
 
 ---
 
@@ -576,6 +618,17 @@ Avant de passer à UC 11 (voir `UC11-objets-sql.md`) ou de déclarer un programm
 - **Sécurité des profils utilisateurs** : vérification des droits avant exécution des procédures critiques (`QSYS2.CHECK_AUTHORITY_TO_OBJECT`)
 
 **À faire avant production :** générer un programme de test pour chaque template additionnel, le valider avec l'équipe, et l'intégrer dans le mode "ACME Developer".
+
+---
+
+## Référence complémentaire — Lab IBM
+
+> **Lab FLIGHT400 — Exercise 3 (Add Field End-to-End)**
+> https://github.com/bmarolleau/flight400-demo
+
+L'Exercise 3 du lab illustre le cas "ajout d'un champ end-to-end" décrit dans la section ci-dessus : ajout du champ `FLHRS` (Flight Hours) à travers toutes les couches de l'application FLIGHT400 — PF (`FLIGHTS`), LF (`FLIGHTSZ`), display file (`FRS021DF`), programme RPG OPM (`FRS021`). Il montre concrètement la stratégie en 3 diffs pour les O-specs OPM (étapes 3d, 3e, 3f, 3g) et la séquence de compilation en ordre strict (`CHGPF` → `CRTLF` → `CRTDSPF` → `CRTRPGPGM`).
+
+**Ce lab est la référence de terrain pour le pattern cross-couches.** Les prompts de l'Exercise 3 sont directement adaptables en remplaçant les noms `FRS021`, `FLIGHTS`, `FLIGHTSZ`, `FLGHT4nn` par les noms de l'application cible.
 
 ---
 

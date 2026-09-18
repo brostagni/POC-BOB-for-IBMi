@@ -196,19 +196,19 @@ Le mode **IBM i Developer** pré-charge le contexte IBM i (DDS, SQL Db2 for i, I
 
 > 💡 **Sans Premium Package IBM i :** utiliser le mode Ask pour l'analyse DDS et la génération DDL (Prompts 0 à 3), puis basculer en mode Agent uniquement pour le test de création DDL (Prompt 3-bis) et la sauvegarde du script validé.
 
-### Intégration ARCAD
+### Spécificité ARCAD — MCP non disponible
 
-Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
+ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
 
 **Impact sur UC 14 : faible.** ARCAD gère les versions et les déploiements — la lecture des sources DDS se fait via IBM i MCP directement dans les bibliothèques, indépendamment d'ARCAD.
 
-| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
-|--------------------------------------|---------------------------|
-| Exporter manuellement l'historique des versions DDS depuis ARCAD | Le MCP ARCAD peut exposer l'historique directement dans le contexte Bob |
-| Vérifier manuellement si un PF est "en promotion" dans ARCAD | Le MCP ARCAD peut vérifier le statut de promotion directement depuis Bob |
-| Réintégrer manuellement les scripts DDL dans ARCAD après validation | Le MCP ARCAD peut versionner et intégrer les scripts automatiquement |
+| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
+|--------------------------------------|------------------------------|
+| Impossible de lire l'historique des versions des fichiers DDS dans ARCAD | IBM i MCP lit la version courante des sources DDS dans les bibliothèques ARCAD normalement |
+| Impossible de vérifier si un PF est actuellement "en promotion" dans un environnement ARCAD | L'analyse DDS et la génération DDL sont intégralement fonctionnelles |
+| Les scripts DDL générés devront être réintégrés dans ARCAD manuellement après validation | Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans les en-têtes des scripts générés |
 
-> 💡 **Dans les deux cas :** avant de démarrer UC 14, vérifier dans ARCAD la liste des PF/LF managés et leur statut (promotions en cours) pour que la génération DDL tienne compte des objets actuellement verrouillés.
+> 💡 **Contournement :** avant de démarrer UC 14, exporter depuis ARCAD la liste des PF/LF managés et leur statut (promotions en cours). Charger cet export dans le contexte Bob pour que la génération DDL tienne compte des objets actuellement verrouillés.
 
 ---
 
@@ -302,6 +302,65 @@ par un DBA ou développeur senior avant de continuer.
 > Le Prompt 1 (analyse détaillée) complète ensuite ce même fichier.
 
 > ⚠️ **Piège évité :** sans le Prompt 0, l'équipe découvre en milieu de Prompt 1 qu'un champ est un REFLD non résolvable ou qu'un LF est une jointure complexe — la session doit être interrompue pour résoudre le blocage. Le Prompt 0 déplace cette découverte au tout début.
+
+---
+
+### Prompt 0-bis — Rapport d'impact pré-migration (recommandé avant tout PF critique)
+
+> **Ce prompt est recommandé sur les PF classés STANDARD ou COMPLEXE** par le Prompt 0, et sur tout PF référencé par de nombreux programmes (identifié dans la matrice UC 6). Il est facultatif sur les PF SIMPLE.
+> Il produit un rapport d'impact complet — journalisation, autorités, verrous, programmes référenceurs — que l'équipe valide **avant** de générer le DDL en Prompt 2.
+
+```
+Le fichier physique [NOM_PF] dans la bibliothèque [NOM_LIB] est décrit en DDS.
+Nous allons procéder à sa conversion en table SQL DDL.
+
+Avant de générer le DDL, produis un rapport d'impact pré-migration complet en markdown.
+Ce rapport doit couvrir :
+
+### 1. DDL équivalent via GENERATE_SQL
+Appelle QSYS2.GENERATE_SQL pour [NOM_LIB].[NOM_PF] et montre le CREATE TABLE généré.
+
+### 2. Références statiques des programmes (DSPPGMREF)
+Interroge QTEMP/PGMREF (via DSPPGMREF sur toutes les bibliothèques de la Library List)
+pour lister les programmes qui référencent [NOM_PF]. Pour chaque programme :
+| Bibliothèque | Programme | Type d'accès (lecture / écriture / mise à jour) |
+
+### 3. Objets dépendants (vues, index, LF)
+Interroge SYSTOOLS.RELATED_OBJECTS pour [NOM_LIB].[NOM_PF].
+Liste tous les objets dépendants (LF, vues SQL, index).
+
+### 4. Statut de journalisation
+Interroge QSYS2.JOURNALED_OBJECTS pour [NOM_LIB].[NOM_PF].
+Si journalisé : journal, récepteur courant, type de journalisation.
+⚠️ La table SQL de remplacement doit répliquer exactement ce paramétrage.
+
+### 5. Verrous actifs
+Interroge QSYS2.OBJECT_LOCK_INFO pour [NOM_LIB].[NOM_PF].
+Si des verrous sont actifs : ne pas modifier l'objet sans coordination avec l'équipe.
+
+### 6. Autorités
+Interroge QSYS2.OBJECT_PRIVILEGES pour [NOM_LIB].[NOM_PF].
+Liste les autorités PUBLIC et spécifiques par utilisateur/groupe.
+⚠️ Ces autorités doivent être recréées sur la table SQL après migration (GRANT).
+
+### 7. Note RRN
+Si des programmes accèdent au fichier par numéro de record relatif (RRN),
+la table SQL de remplacement doit avoir REUSEDLT(*NO) (valeur par défaut — à confirmer).
+
+Sauvegarde ce rapport dans l'IFS sous le nom :
+[NOM_LIB]-[NOM_PF]-impact-dds-migration-{YYYYMMDD}.md
+```
+
+**Pourquoi ce rapport est critique :**
+
+- **DSPPGMREF** révèle les programmes qui accèdent au PF — un programme non listé dans la matrice UC 6 qui accède en écriture à ce PF représente un risque de régression non détecté.
+- **JOURNALED_OBJECTS** : si le PF est journalisé et que la nouvelle table SQL ne l'est pas, les transactions ne sont plus auditées et le commitment control peut ne plus fonctionner correctement.
+- **OBJECT_PRIVILEGES** : les autorités ne se transfèrent pas automatiquement lors de la recréation de l'objet — un oubli laisse des utilisateurs ou des jobs sans accès à la nouvelle table.
+- **GENERATE_SQL** : produit un DDL plus complet que la conversion manuelle (LABEL ON, CCSID, index associés) — sert de point de départ au Prompt 2.
+
+> 💡 **Sauvegarder ce rapport** avant de continuer. Il sert de liste de contrôle pour la phase de validation post-création (Prompt 5).
+
+> ⚠️ **Prérequis :** exécuter ce prompt en mode **IBM i Database** (active les skills Db2 for i et les outils `execute_sql_statement`). Ne pas lancer en mode Ask — les requêtes SQL ne seront pas exécutées.
 
 ---
 
@@ -480,9 +539,18 @@ Règles :
 
 ### Prompt 3-bis — Test de création DDL par Bob (après chaque CREATE TABLE / CREATE INDEX)
 
-> **Ce que Bob peut faire :** exécuter le script DDL sur l'IBM i de test via IBM i MCP en mode **Agent** et rapporter les erreurs SQL.
+> **Ce que Bob peut faire :** valider la syntaxe SQL avec `check_sql_syntax` puis exécuter le script DDL sur l'IBM i de test via IBM i Database MCP en mode **Agent** et rapporter les erreurs SQL.
 > **Ce que Bob ne peut pas faire :** valider que la table créée est fonctionnellement correcte ni qu'elle contient les bonnes données — c'est la vérification humaine du Prompt 5.
 > **Quand l'utiliser :** après chaque Prompt 2 (CREATE TABLE) et après chaque Prompt 3 (CREATE INDEX / CREATE VIEW), avant de passer au fichier suivant.
+
+> 💡 **Étape de pré-validation avec `check_sql_syntax` :** avant d'exécuter le DDL sur l'IBM i, Bob peut valider la syntaxe du script avec `check_sql_syntax`. Cette validation est instantanée et détecte les erreurs de syntaxe (parenthèses manquantes, types inconnus, mots-clés incorrects) sans accéder à l'IBM i. Elle ne remplace pas l'exécution réelle mais évite de soumettre un script avec des erreurs triviales.
+
+```
+Avant d'exécuter le DDL, appelle check_sql_syntax sur le script CREATE TABLE/INDEX/VIEW
+généré. Si check_sql_syntax retourne OK, procède à l'exécution.
+Si des erreurs de syntaxe sont détectées, corrige-les et relance check_sql_syntax.
+N'exécuter sur l'IBM i qu'après validation syntaxique réussie.
+```
 
 ```
 Le script DDL suivant a été généré pour [NOM_PF_OU_LF] dans [NOM_LIB] :
@@ -752,6 +820,19 @@ WHERE EVENT_OBJECT_SCHEMA = '[NOM_LIB]'
 Si des triggers existent : les recréer sur la table SQL avec `CREATE TRIGGER` DDL, ou les remplacer par des procédures stockées selon l'architecture cible. Ajouter cette vérification dans le Prompt 0 (section "Facteurs de complexité") et dans le Prompt 5 (validation post-création).
 
 > ⚠️ **Signal d'alerte sur le terrain :** si après la création de la table SQL des comportements métier disparaissent silencieusement (mise à jour d'une table dérivée qui ne se fait plus, journal applicatif non alimenté) — vérifier en premier lieu si le PF d'origine avait des triggers `ADDPFTRG`.
+
+---
+
+## Référence complémentaire — Lab IBM
+
+Ce UC est documenté et mis en pratique dans un lab officiel IBM :
+
+> **Lab 103 — DDS to SQL Conversion Impact Analysis**
+> https://github.com/bmarolleau/IBM-i-Application-Modernization-with-Bob/blob/main/lab103-premium-dds-to-sql-workflow.md
+
+Ce lab illustre UC 14 sur l'application SAMCO (fichier physique `ARTICLE`) : génération de l'impact report pré-migration (DSPPGMREF, QSYS2.JOURNALED_OBJECTS, QSYS2.OBJECT_LOCK_INFO, QSYS2.OBJECT_PRIVILEGES), utilisation de `QSYS2.GENERATE_SQL`, enrichissement du DDL avec contraintes `DEFAULT` et `CHECK`, validation avec `check_sql_syntax`, et exécution après approbation explicite. Le Step 2 montre concrètement comment naviguer dans le rapport d'impact depuis le navigateur IFS de Code for IBM i.
+
+**Différence de contexte :** le lab utilise `SAMCOn` (bibliothèque de démonstration). Pour ACME, remplacer les noms de bibliothèques et de fichiers par les équivalents QSYS de l'application cible — la logique de prompt est identique. Le Prompt 0-bis de cette fiche est directement inspiré du Step 1 du lab.
 
 ---
 
