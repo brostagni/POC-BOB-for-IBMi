@@ -132,7 +132,20 @@ Chaque session de test d'un programme doit démarrer dans une **nouvelle convers
 
 **Exception :** si on génère un plan de tests périmètre (Prompt 3), rester dans la même conversation exploite la liste complète des programmes à tester.
 
-**Mode à sélectionner :** `IBM i Developer` — rester en **Ask** pour les Prompts 0 à 3 (analyse et génération), basculer en **Agent** pour le Prompt 1-bis (compilation), le Prompt 4 (exécution RPGUnit), le Prompt 5 (automatisation batch) et la sauvegarde.
+**Mode à sélectionner :** `IBM i Developer` (Premium Package IBM i) — mode unique pour toute la session, y compris pour les workflows PPi et les phases de compilation/exécution.
+
+> 💡 **Sans Premium Package IBM i :** utiliser le mode **Ask** pour les Prompts 0 à 3 et la génération P5, puis basculer en mode **Agent** uniquement pour le Prompt 1-bis (compilation), le Prompt 4 (exécution RPGUnit), l'exécution batch P5 et la sauvegarde.
+
+**Scope à sélectionner :** `Library List` → choisir la bibliothèque applicative ACME **et** la bibliothèque de test (ex. `APPVTETEST`).
+
+> 💡 **Ce que le scope Library List change :** Bob dirige ses outils IBM i vers les bibliothèques
+> configurées dans Code for IBM i. Les rules `.bob/rules/`, skills et fichiers markdown locaux
+> **restent accessibles** en parallèle. Les workflows RPGUnit PPi (bouton ▶) deviennent disponibles
+> dès qu'une connexion IBM i est active.
+> (Source : PPi Onboarding Usage Guide)
+
+> 💡 **Avant la première session UC 13 :** vérifier que `RPGUNIT` et `QDEVTOOLS` sont dans la
+> Library List (les workflows PPi les demandent et proposent de les installer si absents).
 
 ### 2. Ouvrir les fichiers sources dans l'éditeur (Open in Editor)
 
@@ -206,8 +219,6 @@ Le mode **IBM i Developer** pré-charge le contexte IBM i (RPG, CL, IBM i MCP, R
 > 💡 **Règle d'or pour UC 13 :** Bob génère dans le chat. L'écriture (`write_member`), la compilation et l'exécution ne sont autorisées qu'après validation explicite de l'équipe. Ne jamais exécuter sur la bibliothèque de **production** — toujours en bibliothèque de test.
 
 > ⚠️ **Bibliothèque cible :** les programmes de test RPGUnit doivent être créés dans une bibliothèque de test dédiée (ex. `APPVTETEST`) — jamais dans les bibliothèques source gérées par ARCAD. Cette séparation est critique pour ne pas polluer le versioning ARCAD.
-
-> 💡 **Sans Premium Package IBM i :** utiliser le mode Ask pour les Prompts 0-3 et la génération P5, puis basculer en mode Agent uniquement pour le Prompt 1-bis (compilation), le Prompt 4 (exécution), l'exécution batch P5 et la sauvegarde.
 
 > 💡 **Sans Premium Package IBM i :** utiliser le mode Ask pour les Prompts 0-3 et la génération P5, puis basculer en mode Agent uniquement pour le Prompt 1-bis (compilation), le Prompt 4 (exécution), l'exécution batch P5 et la sauvegarde.
 
@@ -841,6 +852,10 @@ UC 13 se pratique idéalement en **conversation continue** pour les programmes S
 ---
 
 ## Accélérateurs Premium Package — Workflows RPGUnit (approche recommandée)
+
+> **Prérequis :** connexion IBM i active et mode **IBM i Developer** sélectionné.
+> *"Workflows require a connection to an IBM i before they appear in Bob."*
+> (PPi Onboarding Usage Guide — Seismic)
 
 Le Premium Package for i propose deux workflows Bob dédiés à la génération et l'implémentation de tests RPGUnit. **Ces workflows sont la voie recommandée** pour les sessions UC 13 — ils structurent le travail en étapes guidées et réduisent la surface d'erreur par rapport aux prompts manuels.
 

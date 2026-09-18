@@ -128,6 +128,18 @@ Chaque session de travail sur un programme RPG doit démarrer dans une **nouvell
 
 **Mode à sélectionner :** `IBM i Developer`
 
+**Scope à sélectionner :** `Library List` → choisir la bibliothèque applicative ACME.
+
+> 💡 **Ce que le scope Library List change :** Bob dirige ses outils IBM i vers les bibliothèques
+> configurées dans Code for IBM i. Les rules `.bob/rules/`, skills et fichiers markdown locaux
+> **restent accessibles** en parallèle. Les 5 workflows IBM i (bouton ▶) deviennent disponibles
+> dès qu'une connexion IBM i est active. (Source : PPi Onboarding Usage Guide)
+
+> 💡 **Avant la première session UC 8 :** vérifier que la Library List inclut la bibliothèque
+> source, les bibliothèques contenant les **copybooks et les prototypes** utilisés par le programme
+> à restructurer. UC 8 lit les copybooks pour analyser les interfaces — un copybook manquant
+> force Bob à scanner tout `*LIBL`.
+
 ### 2. Ouvrir les fichiers sources dans l'éditeur (Open in Editor)
 
 Avant de lancer le Prompt 0, ouvrir dans l'éditeur Bob le programme RPG à restructurer. L'ouverture dans l'éditeur le rend accessible au MCP IBM i sans copier-coller.
@@ -189,6 +201,15 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 | **MCP actifs** | IBM i MCP (lecture des sources RPG, écriture des nouveaux modules, compilation de test) |
 | **MCP différés** | IBM i Database MCP (si restructuration implique des accès de données à vérifier), Confluence MCP (publication, si token disponible) |
 
+> 💡 **Workflow disponible pour UC 8 :** le workflow **RPG Modernization**
+> (bouton ▶ → *RPG Modernization*), en mode **IBM i Developer**, peut prendre en charge
+> la conversion Free-format des modules extraits ou du programme principal, **après** que
+> le plan d'architecture (Prompt 1) a été validé.
+> Pipeline : sélection membre → détection OPM/ILE → conversion Free → boucle self-heal → rapport.
+> À utiliser en complément du Prompt 4 quand l'objectif est la conversion Free complète,
+> pas seulement l'extraction de procédures.
+> (Source : Bob IBM i L3 Course — Seismic)
+
 ### Pourquoi le mode IBM i Developer pour la conception et la génération ?
 
 UC 8 est l'UC où le risque de dégradation silencieuse est le plus élevé. Le mode **IBM i Developer** apporte la connaissance RPG/ILE spécialisée pour toute la session. La discipline de travail repose sur **la validation humaine avant toute écriture** : Bob produit le plan d'architecture et chaque module dans le chat — l'équipe valide chaque étape avant d'autoriser explicitement l'écriture sur l'IBM i.
@@ -211,20 +232,20 @@ UC 8 est l'UC où le risque de dégradation silencieuse est le plus élevé. Le 
 
 > ⚠️ Ne jamais autoriser l'écriture pendant la phase de conception du plan d'architecture — une erreur dans le Prompt 1 se propage dans tous les modules générés ensuite.
 
-### Intégration ARCAD
+### Spécificité ARCAD — MCP non disponible
 
-Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
+ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
 
-**Impact sur UC 8 : moyen.** UC 8 crée de nouveaux membres sources (les modules extraits) qui n'existent pas encore dans ARCAD. Ces nouveaux membres devront être enregistrés dans ARCAD après validation.
+**Impact sur UC 8 : moyen.** UC 8 crée de nouveaux membres sources (les modules extraits) qui n'existent pas encore dans ARCAD. Ces nouveaux membres devront être enregistrés manuellement dans ARCAD après validation.
 
-| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
-|--------------------------------------|---------------------------|
-| Créer manuellement les nouveaux membres dans ARCAD après l'extraction | IBM i MCP + MCP ARCAD peuvent créer les membres et les enregistrer dans ARCAD directement |
-| Vérifier manuellement dans ARCAD si le programme est verrouillé par une promotion | Le MCP ARCAD peut exposer le statut de verrouillage directement dans Bob |
-| Réintégration manuelle dans ARCAD — documenter dans `*-plan-archi-*.md` | Les nouveaux modules peuvent être intégrés automatiquement dans les packages de déploiement ARCAD |
-| Charger un export ARCAD pour accéder à l'historique du programme | L'historique de version est accessible directement via le MCP ARCAD |
+| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
+|--------------------------------------|------------------------------|
+| Impossible de créer automatiquement les nouveaux membres dans ARCAD lors de l'extraction | IBM i MCP peut créer les membres dans les bibliothèques source directement — ARCAD les verra ensuite lors de la synchro manuelle |
+| Impossible de vérifier si le programme en cours de restructuration est verrouillé par une promotion ARCAD en cours | Vérification manuelle dans l'interface ARCAD avant de démarrer chaque session UC 8 |
+| Les nouveaux modules extraits ne sont pas automatiquement intégrés dans les packages de déploiement ARCAD | Réintégration manuelle dans ARCAD — documenter la liste des nouveaux membres créés dans le fichier `*-plan-archi-*.md` |
+| L'historique de version du programme original n'est pas accessible depuis Bob | Charger un export ARCAD si l'historique est nécessaire pour comprendre l'évolution du programme |
 
-> 💡 **Dans les deux cas :** au début de chaque session UC 8, vérifier dans ARCAD la liste des programmes du périmètre et leur statut. Créer un checkpoint sur les membres à modifier avant de démarrer.
+> 💡 **Contournement :** au début de chaque session UC 8, exporter depuis ARCAD la liste des programmes du périmètre et leur statut (en promotion ou non). Créer un checkpoint ARCAD sur les membres à modifier avant de démarrer — facilite la comparaison avant/après en cas de problème.
 
 > ⚠️ **Écriture dans le fichier ARCAD ouvert — pas dans QSYS directement.** Quand le programme est ouvert depuis une version ARCAD (via Code for IBM i → Object Browser → clic droit → Open in Editor), toutes les écritures de Bob (programme principal modifié, nouveaux modules extraits) doivent cibler les membres dans la **bibliothèque source ARCAD ouverte**, pas un chemin `QSYS` absolu. Si Bob affiche un WARNING et propose un chemin `QSYS`, interrompre et préciser : *"Écris dans [NOM_LIB]/QRPGSRC([NOM_PROGRAMME]) — ne pas écrire dans QSYS directement."* La validation dans le chat avant tout `write_member` est le rempart contre ce cas.
 

@@ -131,6 +131,20 @@ Chaque session de travail sur un programme RPG doit démarrer dans une **nouvell
 
 **Mode à sélectionner :** `IBM i Developer`
 
+**Scope à sélectionner :** `Library List` → choisir la bibliothèque applicative ACME dans la liste proposée.
+
+> 💡 **Ce que le scope Library List change :** Bob dirige ses outils IBM i (`read_member`,
+> `search_qsys`, `execute_compile_action`) vers les bibliothèques configurées dans l'extension
+> Code for IBM i. Les rules `.bob/rules/`, les skills PPi et les fichiers markdown locaux
+> **restent accessibles** — le workspace VS Code reste ouvert en parallèle. Les 5 workflows IBM i
+> (bouton ▶ en haut à droite du panneau Bob) deviennent disponibles dès qu'une connexion IBM i est active.
+> (Source : PPi Onboarding Usage Guide)
+
+> 💡 **Avant la première session UC 2 :** vérifier que la User Library List
+> (panneau Code for IBM i → Library List dans VS Code) inclut la bibliothèque source applicative
+> **et** les bibliothèques contenant les copybooks utilisés par le programme.
+> Cela évite les scans globaux de 30+ minutes sur `*LIBL` entier.
+
 ### 2. Ouvrir les fichiers sources dans l'éditeur (Open in Editor)
 
 Avant de lancer le Prompt 0, ouvrir dans l'éditeur Bob le programme RPG à convertir. L'ouverture dans l'éditeur le rend accessible au MCP IBM i sans copier-coller.
@@ -1052,6 +1066,38 @@ Avant de passer à UC 13 (tests de non-régression), ou de déclarer un programm
 ---
 
 ## Accélérateurs Premium Package pour UC 2
+
+### Workflow PPi — "RPG Modernization" (approche recommandée)
+
+> Disponible depuis le bouton `Start Workflow` (▶ en haut du panneau Chat Bob),
+> en mode **IBM i Developer**, connexion IBM i active requise.
+
+**Ce que fait ce workflow :** conversion complète RPG OPM ou ILE fixed-format → ILE Free-format,
+avec boucle self-heal sur les erreurs de compilation.
+
+Pipeline :
+```
+Select QSYS Member → Detect type → [OPM→ILE si nécessaire + compile]
+→ Convert to Free-format → Compile + Fix errors (self-heal) → Summary Report
+```
+
+**Paramètres demandés :** membre QSYS source, bibliothèque de sortie, mode (OPM ou ILE fixed détecté automatiquement).
+
+**Bob gère automatiquement :** TAG, CAS/ENDCS, MOVE, PLIST, indicateurs applicatifs,
+DOUEQ/CASEQ dispatch → IF/ELSEIF, EVAL, interfaces de procédure.
+
+**Points d'approbation humaine :** emplacement du membre de sortie, rapport final.
+
+> 💡 **Recommandation L3 Course :** *"Always ask Bob 'What does this program do?' before
+> modernizing it."* — lancer une session UC 4 sur le programme avant d'utiliser ce workflow.
+
+> 💡 **Quand préférer les prompts manuels UC 2 :** quand un contrôle précis subroutine par
+> subroutine est requis (programmes COMPLEXE avec cycle RPG actif, indicateurs de niveau de contrôle),
+> ou quand la conversion doit être validée étape par étape avant compilation.
+
+> 💡 **Lien avec `convert_rpg_source` :** le workflow orchestre toute la séquence incluant
+> l'outil `convert_rpg_source` (pré-conversion mécanique). Les prompts UC 2 permettent
+> d'opérer les mêmes transformations avec un contrôle plus fin.
 
 ### Outil `convert_rpg_source` (PPi)
 

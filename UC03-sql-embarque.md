@@ -126,6 +126,17 @@ UC 3 se déroule en **deux phases qui utilisent des modes différents** :
 
 > 💡 Le mode `IBM i Database` produit des requêtes SQL plus précises car il interroge le catalogue Db2 for i (`QSYS2.SYSTABLES`, `SYSCOLUMNS`) pour valider les noms de colonnes et les types réels — pas seulement ce que Bob infère du code RPG.
 
+**Scope à sélectionner :** `Library List` → choisir la bibliothèque applicative ACME.
+
+> 💡 **Ce que le scope Library List change :** Bob dirige ses outils IBM i vers les bibliothèques
+> configurées dans Code for IBM i. Les rules `.bob/rules/`, skills et fichiers markdown locaux
+> **restent accessibles** en parallèle. Les 5 workflows IBM i (bouton ▶) deviennent disponibles
+> dès qu'une connexion IBM i est active. (Source : PPi Onboarding Usage Guide)
+
+> 💡 **Avant la première session UC 3 :** vérifier que la Library List inclut la bibliothèque source,
+> les bibliothèques contenant les copybooks et les tables SQL cibles. Le workflow SQL Index Strategy
+> Advisor (voir ci-dessous) utilise également cette Library List pour analyser les patterns d'accès.
+
 ### 2. Ouvrir les fichiers sources dans l'éditeur (Open in Editor)
 
 Avant de lancer le Prompt 0, ouvrir dans l'éditeur Bob le programme RPG à convertir. L'ouverture dans l'éditeur le rend accessible au MCP IBM i sans copier-coller.
@@ -178,6 +189,13 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 | **MCP actifs** | IBM i MCP (lecture sources RPG) + IBM i Database MCP (validation SQL, QSYS2) |
 | **MCP différés** | Confluence MCP (publication des sources convertis, si token disponible) |
 
+> 💡 **Workflow disponible pour UC 3 :** le workflow **SQL Index Strategy Advisor**
+> (bouton ▶ → *SQL Index Strategy Advisor*), en mode **IBM i Database**, analyse les patterns
+> d'accès aux données dans le code RPG/CL et recommande une stratégie d'index Db2 for i.
+> À utiliser en complément du Prompt 5 (plan de conversion périmètre) ou après le Prompt 4
+> pour valider la stratégie d'index sur les curseurs générés.
+> (Source : Customer Deck PPi — Seismic)
+
 ### Pourquoi deux modes IBM i pour UC 3 ?
 
 UC 3 est l'unique use case du POC qui mobilise les **deux modes IBM i Premium** sur une même session :
@@ -187,21 +205,6 @@ UC 3 est l'unique use case du POC qui mobilise les **deux modes IBM i Premium** 
 - **IBM i Database** est spécialisé sur SQL Db2 for i. Il connaît les curseurs embarqués (`DECLARE CURSOR`, `OPEN`, `FETCH`, `CLOSE`), la gestion des `SQLCODE` et `SQLSTATE`, les directives de précompilation (`EXEC SQL`), et les patterns de performance Db2 for i (`FOR FETCH ONLY`, `OPTIMIZE FOR n ROWS`). C'est le mode adapté pour générer et itérer le SQL embarqué.
 
 La discipline de travail repose sur **la validation humaine avant toute écriture** : pendant toutes les phases de génération, Bob produit dans le chat uniquement ; le développeur valide avant d'autoriser l'écriture sur l'IBM i.
-
-> 💡 **Sans Premium Package IBM i :** utiliser le mode **Ask** pour l'analyse (Prompts 0-1) et la génération SQL (Prompts 2-3), et le mode **Agent** pour la compilation et la sauvegarde. La discipline de validation reste identique.
-
-| Phase | Mode recommandé | Comportement attendu | Ce que Bob fait |
-|-------|-----------------|----------------------|----------------|
-| Qualification du programme (Prompt 0) | **IBM i Developer** | Génère dans le chat — pas d'écriture | Compte les opcodes, détecte les facteurs de complexité, recommande la stratégie |
-| Inventaire des accès natifs (Prompt 1) | **IBM i Developer** | Génère dans le chat — pas d'écriture | Lit le source RPG via IBM i MCP, produit le tableau détaillé des opcodes |
-| Génération SQL embarqué (Prompts 2, 3) | **IBM i Database** | Génère dans le chat — pas d'écriture | Génère le source converti dans le chat — itérations possibles |
-| Test de compilation (Prompt 2-bis) | **IBM i Database** | **Écriture et exécution autorisées** — après validation du développeur | Lance `CRTBNDRPG` via IBM i MCP, rapporte les erreurs |
-| Test fonctionnel | **Humain uniquement** | — | Exécution sur IBM i de test, comparaison des résultats — non délégable à Bob |
-| Sauvegarde du source converti | **IBM i Database** | **Écriture autorisée** — après validation complète | Écrit le fichier `.md` (diff ou source complet) dans le workspace |
-
-> 💡 **Règle d'or pour UC 3 :** L'écriture et la compilation ne sont autorisées qu'après validation explicite du développeur. Un source RPG avec un `SQLCODE` non testé peut compiler sans erreur mais produire un comportement silencieusement incorrect en production.
-
-> ⚠️ Ne jamais autoriser l'écriture pendant la phase de génération et d'itération SQL (Prompts 0 à 3) — les curseurs mal fermés et les `SQLCODE` non gérés ne sont pas détectés à la compilation.
 
 > 💡 **Sans Premium Package IBM i :** utiliser le mode **Ask** pour l'analyse (Prompts 0-1) et la génération SQL (Prompts 2-3), et le mode **Agent** pour la compilation et la sauvegarde. La discipline de validation reste identique.
 

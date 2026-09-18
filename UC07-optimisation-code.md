@@ -122,6 +122,20 @@ Chaque session de travail sur un programme RPG doit démarrer dans une **nouvell
 
 **Mode à sélectionner :** `IBM i Developer`
 
+**Scope à sélectionner :** `Library List` → choisir la bibliothèque applicative ACME dans la liste proposée.
+
+> 💡 **Ce que le scope Library List change :** Bob dirige ses outils IBM i (`read_member`,
+> `search_qsys`, `execute_compile_action`) vers les bibliothèques configurées dans l'extension
+> Code for IBM i. Les rules `.bob/rules/`, les skills PPi et les fichiers markdown locaux
+> **restent accessibles** — le workspace VS Code reste ouvert en parallèle. Les 5 workflows IBM i
+> (bouton ▶ en haut à droite du panneau Bob) deviennent disponibles dès qu'une connexion IBM i est active.
+> (Source : PPi Onboarding Usage Guide)
+
+> 💡 **Avant la première session UC 7 :** vérifier que la User Library List
+> (panneau Code for IBM i → Library List dans VS Code) inclut la bibliothèque source applicative
+> **et** les bibliothèques contenant les copybooks utilisés par le programme.
+> Cela évite les scans globaux de 30+ minutes sur `*LIBL` entier.
+
 ### 2. Ouvrir les fichiers sources dans l'éditeur (Open in Editor)
 
 Avant de lancer le Prompt 0, ouvrir dans l'éditeur Bob le programme RPG à optimiser. L'ouverture dans l'éditeur le rend accessible au MCP IBM i sans copier-coller.
@@ -177,6 +191,14 @@ Ces fichiers produits par les UC précédents doivent être disponibles dans le 
 | **MCP actifs** | IBM i MCP (lecture des sources RPG, compilation de test) |
 | **MCP différés** | IBM i Database MCP (si optimisations liées à des accès de données), Confluence MCP (publication, si token disponible) |
 
+> 💡 **Workflow disponible pour UC 7 :** le workflow **Business Rules Extraction**
+> (bouton ▶ → *Business Rules Extraction*), en mode **IBM i Developer**, peut être utilisé
+> en complément du Prompt 1 sur les programmes STANDARD à COMPLEXE — il identifie le code
+> dupliqué et les blocs extractibles en procédures, alimentant directement les décisions
+> du Prompt 4 (extraction de procédures).
+> À lancer **après** le Prompt 0 (qualification) et **avant** le Prompt 4.
+> (Source : Bob IBM i L3 Course — Seismic)
+
 ### Pourquoi le mode IBM i Developer pour la génération du diff d'optimisation ?
 
 Les optimisations de code sont des modifications **précises et réversibles** — chaque renommage, chaque extraction de procédure doit être revue avant d'être appliquée. Le mode **IBM i Developer** apporte la connaissance RPG/ILE spécialisée pour toute la session. La discipline de travail repose sur **la validation humaine avant toute écriture** : Bob produit le diff complet dans le chat, l'équipe relit, questionne, corrige une dénomination proposée, puis autorise explicitement l'écriture sur l'IBM i.
@@ -199,19 +221,19 @@ Les optimisations de code sont des modifications **précises et réversibles** �
 
 > ⚠️ Ne jamais autoriser l'écriture pendant la phase d'analyse — une variable renommée incorrectement sera dans le source avant que l'équipe ait pu la valider.
 
-### Intégration ARCAD
+### Spécificité ARCAD — MCP non disponible
 
-Le MCP ARCAD n'était pas disponible dans le contexte de ce POC de référence (version ARCAD non compatible avec le MCP). Si le MCP ARCAD est disponible dans votre environnement, les étapes manuelles de réintégration décrites ci-dessous peuvent être automatisées. N'hésitez pas à demander à Bob de modifier cette fiche UC en intégrant la disponibilité du MCP ARCAD.
+ACME utilise ARCAD pour la gestion du code source IBM i. Le MCP ARCAD n'est **pas actif** dans ce POC (incompatibilité de version).
 
 **Impact sur UC 7 : faible.** Les optimisations de code modifient le source RPG dans les bibliothèques — IBM i MCP accède à ces bibliothèques indépendamment d'ARCAD.
 
-| Sans MCP ARCAD (contexte de ce POC) | Avec MCP ARCAD disponible |
-|--------------------------------------|---------------------------|
-| Créer manuellement une tâche ARCAD pour chaque programme optimisé | Le MCP ARCAD peut créer la tâche et versionner automatiquement |
-| Réintégration manuelle dans ARCAD après chaque session | IBM i MCP lit et compile les sources dans les bibliothèques ARCAD normalement dans les deux cas |
-| Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans chaque diff | Le placeholder n'est plus nécessaire — la réintégration est pilotée par Bob |
+| Ce que l'absence du MCP ARCAD change | Ce qui fonctionne quand même |
+|--------------------------------------|------------------------------|
+| Impossible de créer automatiquement une tâche ARCAD pour chaque programme optimisé | IBM i MCP lit et compile les sources dans les bibliothèques ARCAD normalement |
+| Les sources optimisés ne sont pas automatiquement versionnés dans ARCAD | L'analyse, la génération du diff et la compilation de test sont intégralement fonctionnels |
+| Réintégration manuelle dans ARCAD après chaque session d'optimisation | Ajouter le placeholder `⚠️ Réintégration ARCAD — à effectuer manuellement après validation` dans l'en-tête de chaque fichier diff généré |
 
-> 💡 **Dans les deux cas :** avant de démarrer UC 7 sur un programme, vérifier dans ARCAD qu'il n'est pas en cours de modification par un autre développeur (promotion en cours). Charger la liste des objets verrouillés dans le contexte Bob pour éviter de travailler sur une version qui sera écrasée.
+> 💡 **Contournement :** avant de démarrer UC 7 sur un programme, vérifier dans ARCAD qu'il n'est pas en cours de modification par un autre développeur (promotion en cours). Charger la liste des objets verrouillés dans le contexte Bob pour éviter de travailler sur une version qui sera écrasée.
 
 > ⚠️ **Écriture dans le fichier ARCAD ouvert — pas dans QSYS directement.** Quand le programme est ouvert depuis une version ARCAD (via Code for IBM i → Object Browser → clic droit → Open in Editor), Bob doit écrire les modifications dans **ce fichier déjà ouvert dans l'éditeur**, pas dans le membre `QSYS/QRPGSRC`. Si Bob propose d'écrire via un chemin `QSYS` absolu et affiche un WARNING, interrompre et préciser explicitement : *"Modifie le fichier actuellement ouvert dans l'éditeur — [NOM_LIB]/QRPGSRC([NOM_PROGRAMME]) — ne pas écrire dans QSYS directement."* Le mode **Ask** pendant la génération du diff empêche ce cas : Bob produit le diff dans le chat, et c'est l'équipe qui décide où et comment l'appliquer.
 

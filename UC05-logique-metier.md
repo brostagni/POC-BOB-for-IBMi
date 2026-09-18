@@ -90,6 +90,20 @@ Si UC 4 a été fait dans une session **précédente** (autre jour, autre sessio
 
 **Mode à sélectionner :** `IBM i Developer`
 
+**Scope à sélectionner :** `Library List` → choisir la bibliothèque applicative ACME dans la liste proposée.
+
+> 💡 **Ce que le scope Library List change :** Bob dirige ses outils IBM i (`read_member`,
+> `search_qsys`, `execute_compile_action`) vers les bibliothèques configurées dans l'extension
+> Code for IBM i. Les rules `.bob/rules/`, les skills PPi et les fichiers markdown locaux
+> **restent accessibles** — le workspace VS Code reste ouvert en parallèle. Les 5 workflows IBM i
+> (bouton ▶ en haut à droite du panneau Bob) deviennent disponibles dès qu'une connexion IBM i est active.
+> (Source : PPi Onboarding Usage Guide)
+
+> 💡 **Avant la première session UC 5 :** vérifier que la User Library List
+> (panneau Code for IBM i → Library List dans VS Code) inclut la bibliothèque source applicative
+> **et** les bibliothèques contenant les copybooks utilisés par le programme.
+> Cela évite les scans globaux de 30+ minutes sur `*LIBL` entier.
+
 ### 2. Ouvrir les fichiers sources dans l'éditeur (Open in Editor)
 
 Si UC 5 démarre dans une nouvelle session, ouvrir le programme RPG source dans l'éditeur — Bob en a besoin pour affiner les règles extraites avec le code précis.
@@ -358,6 +372,35 @@ En fin de document, ajoute une section "Questions pour l'expert métier" avec
 | **IBM i MCP** | Lecture des membres sources RPG, CL, DDS (display files pour les validations) |
 | **IBM i Database MCP** | Interrogation des tables de paramétrage référencées dans les règles (taux, codes, seuils) |
 | **Confluence MCP** *(si disponible)* | Publication du catalogue de règles et du document de validation sur l'espace POC |
+
+---
+
+## Accélérateur Premium Package — Workflow "Business Rules Extraction"
+
+> Disponible depuis le bouton `Start Workflow` (▶ en haut du panneau Chat Bob),
+> en mode **IBM i Developer**, connexion IBM i active requise.
+> (Source : Bob IBM i L3 Course — Seismic)
+
+**Ce que fait ce workflow :**
+1. Analyse le code source RPG pour identifier les règles métier, le code dupliqué et les blocs extractibles
+2. Propose l'extraction des règles en procédures réutilisables
+3. Recommande la conversion en SQL des accès natifs identifiés dans les règles
+4. Produit un rapport structuré des règles métier extraites
+
+**Différence avec les prompts manuels UC 5 :**
+
+| Approche | Avantage | Cas d'usage recommandé |
+|---|---|---|
+| **Workflow Business Rules Extraction** | Guidé étape par étape, auto-structuré, self-heal sur les extractions | Première extraction sur un programme inconnu, programmes STANDARD à COMPLEXE |
+| **Prompts manuels UC 5** | Contrôle précis subroutine par subroutine, statut "certain/probable/à confirmer", document de validation métier | Validation par expert métier, règles ambiguës, programmes avec tables de paramétrage nombreuses |
+
+> 💡 **Séquence recommandée :** utiliser le workflow pour une première extraction rapide,
+> puis affiner avec les prompts manuels UC 5 (notamment Prompt 5 — document de validation métier)
+> pour la revue avec l'expert métier ACME.
+
+> 💡 **Lien UC 5 → UC 7 :** les règles extraites par ce workflow identifient également les
+> candidats à l'extraction en procédures (Prompt 4 de UC 7). Les deux UC peuvent se nourrir
+> du même output de workflow.
 
 ---
 
